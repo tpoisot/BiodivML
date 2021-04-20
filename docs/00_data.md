@@ -50,18 +50,11 @@ using DataFramesMeta
 
 
 
-And maybe a plot?
+We will also plot and pretty-print tables:
 
 ```julia
 using Gadfly
-```
-
-
-
-
-And pretty-printing!
-
-```julia
+import Cairo, Fontconfig
 import Latexify
 ```
 
@@ -353,3 +346,28 @@ So far, we have
 
 - **saved** the dataset we will actually use to disk   
 `CSV.Write`
+
+---
+
+class: split-30
+
+# Plotting the data
+
+.column[
+```julia
+plot(penguins,
+    x=:culmen_length,
+    y=:culmen_depth,
+    color=:species,
+    Geom.point
+);
+```
+
+
+
+]
+
+.column[
+![Culmen plot][culmenplot]
+[culmenplot]: /figures/00_data_culmen_1.png "title"
+]

@@ -43,15 +43,11 @@ using DataFrames
 using DataFramesMeta
 ```
 
-And maybe a plot?
+We will also plot and pretty-print tables:
 
 ```julia
 using Gadfly
-```
-
-And pretty-printing!
-
-```julia
+import Cairo, Fontconfig
 import Latexify
 ```
 
@@ -259,8 +255,22 @@ So far, we have
 
 ---
 
+class: split-30
+
 # Plotting the data
 
-```julia
-
+.column[
+```julia; label="culmen", dpi=400, results="hidden"
+plot(penguins,
+    x=:culmen_length,
+    y=:culmen_depth,
+    color=:species,
+    Geom.point
+);
 ```
+]
+
+.column[
+![Culmen plot][culmenplot]
+[culmenplot]: /figures/00_data_culmen_1.png "title"
+]

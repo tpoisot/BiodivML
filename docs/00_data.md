@@ -351,7 +351,7 @@ So far, we have
 
 class: split-30
 
-# Plotting the data
+# Looking at relationships
 
 .column[
 ```julia
@@ -370,4 +370,34 @@ plot(penguins,
 .column[
 ![Culmen plot][culmenplot]
 [culmenplot]: /figures/00_data_culmen_1.png "title"
+]
+
+---
+
+class: split-40
+
+# Looking at distributions
+
+.column[
+```julia
+plot(
+    dropmissing(
+        select(
+        penguins,
+        [:species, :bodymass])
+    ),
+    x=:bodymass,
+    color=:species,
+    Geom.density
+)
+```
+
+![](figures/00_data_bodymass_1.png)
+
+
+]
+
+.column[
+![Bodymass plot][bodymass]
+[bodymass]: /figures/00_data_bodymass_1.png "title"
 ]

@@ -271,8 +271,7 @@ plot(penguins,
 ]
 
 .column[
-![Culmen plot][culmenplot]
-[culmenplot]: figures/00_data_culmen_1.png "title"
+![Culmen plot](/figures/00_data_culmen_1.png)
 ]
 
 ---
@@ -282,7 +281,7 @@ class: split-40
 # Looking at distributions
 
 .column[
-```julia; label="bodymass", dpi=400
+```julia; label="bodymass", dpi=400, results="hidden"
 plot(
     dropmissing(
         select(
@@ -292,11 +291,10 @@ plot(
     x=:bodymass,
     color=:species,
     Geom.density
-)
+);
 ```
 ]
 
 .column[
-![Bodymass plot][bodymass]
-[bodymass]: figures/00_data_bodymass_1.png "title"
+![Bodymass plot](/figures/00_data_bodymass_1.png)
 ]

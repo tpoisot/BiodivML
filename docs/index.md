@@ -8,4 +8,4 @@ title: Index
 | ----- | -------------- | ------- |
 | 1     | Data wrangling | [⏯️][00] |
 
-[00]: data/
+[00]: data.html

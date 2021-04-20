@@ -368,8 +368,7 @@ plot(penguins,
 ]
 
 .column[
-![Culmen plot][culmenplot]
-[culmenplot]: figures/00_data_culmen_1.png "title"
+![Culmen plot](/figures/00_data_culmen_1.png)
 ]
 
 ---
@@ -389,15 +388,13 @@ plot(
     x=:bodymass,
     color=:species,
     Geom.density
-)
+);
 ```
 
-![](figures/00_data_bodymass_1.png)
 
 
 ]
 
 .column[
-![Bodymass plot][bodymass]
-[bodymass]: figures/00_data_bodymass_1.png "title"
+![Bodymass plot](/figures/00_data_bodymass_1.png)
 ]

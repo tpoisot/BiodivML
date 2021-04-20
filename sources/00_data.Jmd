@@ -180,7 +180,7 @@ renames = [
 ]
 rename!(adelie, renames...)
 adelie.species .= "Adelie"
-Latexify.latexify(first(adelie, 6), latex=false, env=:mdtable)
+Latexify.latexify(first(adelie, 4), latex=false, env=:mdtable)
 ```
 
 ---

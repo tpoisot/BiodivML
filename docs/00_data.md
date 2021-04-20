@@ -240,7 +240,7 @@ renames = [
 ]
 rename!(adelie, renames...)
 adelie.species .= "Adelie"
-Latexify.latexify(first(adelie, 6), latex=false, env=:mdtable)
+Latexify.latexify(first(adelie, 4), latex=false, env=:mdtable)
 ```
 
 
@@ -250,8 +250,6 @@ Latexify.latexify(first(adelie, 6), latex=false, env=:mdtable)
 |  Adelie | Anvers | Torgersen |          39.5 |         17.4 |            186 |     3800 |  FEMALE |
 |  Adelie | Anvers | Torgersen |          40.3 |         18.0 |            195 |     3250 |  FEMALE |
 |  Adelie | Anvers | Torgersen |       missing |      missing |        missing |  missing | missing |
-|  Adelie | Anvers | Torgersen |          36.7 |         19.3 |            193 |     3450 |  FEMALE |
-|  Adelie | Anvers | Torgersen |          39.3 |         20.6 |            190 |     3650 |    MALE |
 
 
 

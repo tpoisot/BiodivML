@@ -321,10 +321,12 @@ class: split-30
 
 .column[
 ```julia; label="culmen", dpi=400, results="hidden"
-plot(penguins,
-    x=:culmen_length,
-    y=:culmen_depth,
+plot(
+    dropmissing(penguins),
+    x=:flipper_length,
+    y=:culmen_length,
     color=:species,
+    Geom.ellipse,
     Geom.point
 );
 ```

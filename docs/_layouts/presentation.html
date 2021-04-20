@@ -12,27 +12,27 @@
         body {
             font-family: 'Nunito';
         }
-        
+
         h1,
         h2,
         h3 {
             color: #114f54;
             font-weight: 500;
         }
-        
+
         .remark-code,
         .remark-inline-code {
             font-family: 'JetBrains Mono';
         }
 
-        .remark-code{
+        .remark-code {
             font-size: 80%;
         }
-        .remark-inline-code{
+
+        .remark-inline-code {
             font-size: 95%;
             color: #1d8265;
         }
-        
 
         .remark-slide-container:first-of-type .remark-slide-content {
             background-color: #f4f4f4;
@@ -42,10 +42,9 @@
 
         .remark-slide-content {
             padding: 1em 2em 1em 2em;
-            background: linear-gradient(270deg, #1d8265, #1d8265 5px, #fefefe 5px, #fefefe);
-
         }
-        .remark-slide-content > h1 {
+
+        .remark-slide-content>h1 {
             margin: 0em 0em 1em 0em;
         }
 
@@ -56,27 +55,74 @@
             border: 1px solid #e6e6e6;
         }
 
+        ul {
+            list-style-type: circle;
+            list-style-position: outside;
+        }
+
         .column {
-            float:right;
+            float: right;
             padding: 10px;
             box-sizing: border-box;
         }
-        .column:first-of-type {float:left}
-        
-        .split-60 .column {width: 40%}
-        .split-60 .column:first-of-type {width: 60%}
 
-        .split-50 .column {width: 50%}
-        .split-50 .column:first-of-type {width: 50%}
+        .column:first-of-type {
+            float: left
+        }
 
-        .split-40 .column {width: 60%}
-        .split-40 .column:first-of-type {width: 40%}
+        .split-60 .column {
+            width: 40%
+        }
 
-        .split-30 .column {width: 70%}
-        .split-30 .column:first-of-type {width: 30%}
+        .split-60 .column:first-of-type {
+            width: 60%
+        }
+
+        .split-50 .column {
+            width: 50%
+        }
+
+        .split-50 .column:first-of-type {
+            width: 50%
+        }
+
+        .split-40 .column {
+            width: 60%
+        }
+
+        .split-40 .column:first-of-type {
+            width: 40%
+        }
+
+        .split-30 .column {
+            width: 70%
+        }
+
+        .split-30 .column:first-of-type {
+            width: 30%
+        }
 
         img {
             width: 100%;
+        }
+
+        .remark-slide-number {
+            position: inherit;
+            opacity: 50%;
+        }
+
+        .remark-slide-number .progress-bar-container {
+            position: absolute;
+            bottom: 0;
+            height: 5px;
+            display: block;
+            left: 0;
+            right: 0;
+        }
+
+        .remark-slide-number .progress-bar {
+            height: 100%;
+            background-color: #1d8265;
         }
     </style>
 </head>
@@ -94,10 +140,16 @@
             ratio: '16:9',
             navigation: {
                 scroll: false,
-            }
+            },
+            slideNumberFormat: (current, total) => `
+        <div class="progress-bar-container">
+          <div class="progress-bar" style="width: ${current / total * 100}%">
+          </div>
+        </div>
+      `
         });
     </script>
-    
+
 </body>
 
 </html>

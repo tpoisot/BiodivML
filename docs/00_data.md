@@ -11,11 +11,17 @@ permalink: "data"
 
 ---
 
-# What ?
+# Class agenda
+
+## What we will do
 
 - Reproduce the up and coming `penguins` dataset
+- Perform some exploratory data visualisation
+- Trasnform and aggregate data 
 
-# Why ?
+--
+
+## Why we will do it
 
 - `iris` comes from a long tradition of eugenics in statistics
 - Penguins are cool
@@ -165,12 +171,90 @@ readdir(joinpath("data", "penguins"))
 
 ---
 
-# Examining the data
+# Reading the data
 
-We can have a look at the data, to get a sense for what the columns are:
+We are now ready to load the data.
+
+--
+
+First, where are they?
+
+```julia
+adelie_csv_file = joinpath("data", "penguins", "adelie.csv")
+```
+
+
+
+
+--
+
+Let's read them as a a `CSV` file:
+
+```julia
+adelie_csv = CSV.File(adelie_csv_file)
+```
+
+
+
+
+--
+
+And finally, let's make a `DataFrame` out of them:
+
+```julia
+adelie = DataFrame(adelie_csv)
+```
+
+
+
+
+---
+
+# Reading the data (alternative one liners)
+
+In the previous slide, we called the functions the "standard" way, where the
+arguments were nested inside the function calls.
+
+We could have written this as a single line:
 
 ```julia
 adelie = DataFrame(CSV.File(joinpath("data", "penguins", "adelie.csv")))
+```
+
+
+
+
+--
+
+But there is another way: using *pipes* (`|>`, which are the characters `|` and
+`>`). Pipes send arguments from one function to another. We could have written
+the same line in the following way:
+
+```julia
+adelie = joinpath("data", "penguins", "adelie.csv") |> CSV.File |> DataFrame
+```
+
+
+
+
+--
+
+Pipes are useful if you want to emphasize the *chronology* of the code:
+
+```julia
+adelie = joinpath("data", "penguins", "adelie.csv") |>
+    CSV.File |>
+    DataFrame
+```
+
+
+
+
+---
+
+# What do the data look like?
+
+```julia
 Latexify.latexify(adelie[1:3,1:7], latex=false, env=:mdtable)
 ```
 

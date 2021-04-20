@@ -369,7 +369,7 @@ plot(penguins,
 
 .column[
 ![Culmen plot][culmenplot]
-[culmenplot]: /figures/00_data_culmen_1.png "title"
+[culmenplot]: figures/00_data_culmen_1.png "title"
 ]
 
 ---
@@ -399,5 +399,5 @@ plot(
 
 .column[
 ![Bodymass plot][bodymass]
-[bodymass]: /figures/00_data_bodymass_1.png "title"
+[bodymass]: figures/00_data_bodymass_1.png "title"
 ]

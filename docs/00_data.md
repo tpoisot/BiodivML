@@ -437,8 +437,9 @@ plot(
     x=:flipper_length,
     y=:culmen_length,
     color=:species,
-    Geom.ellipse,
-    Geom.point
+    Geom.ellipse, Geom.point,
+    Guide.xlabel("Flipper length (mm)"),
+    Guide.ylabel("Culmen length (mm)")
 ) |>
 PNG("figures/data_ellipses.png", dpi=600)
 ```
@@ -446,6 +447,7 @@ PNG("figures/data_ellipses.png", dpi=600)
 
 
 ]
+
 
 .column[
 ![Culmen plot](figures/data_ellipses.png)
@@ -463,14 +465,14 @@ plot(
     dropmissing(
         select(
         penguins,
-        [
-            :species,
-            :bodymass
-        ])
+        [:species, :bodymass]
+        )
     ),
     x=:bodymass,
     color=:species,
-    Geom.density
+    Geom.density,
+    Guide.xlabel("Body mass (g)"),
+    Guide.ylabel("Density")
 ) |>
 PNG("figures/data_distributions.png", dpi=600)
 ```

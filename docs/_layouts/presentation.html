@@ -6,26 +6,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{ page.title | strip_html }}</title>
     <style>
-        @import url(https://fonts.googleapis.com/css?family=PT+Sans);
-        @import url(https://fonts.googleapis.com/css?family=PT+Serif);
-        @import url(https://fonts.googleapis.com/css?family=PT+Mono);
-        
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap');
+
         body {
-            font-family: 'PT Sans';
+            font-family: 'Nunito';
         }
         
         h1,
         h2,
         h3 {
-            font-family: 'PT Serif';
-            font-weight: normal;
+            color: #114f54;
+            font-weight: 500;
         }
         
         .remark-code,
         .remark-inline-code {
-            font-family: 'PT Mono';
+            font-family: 'JetBrains Mono';
+        }
+
+        .remark-code{
+            font-size: 80%;
+        }
+        .remark-inline-code{
+            font-size: 95%;
+            color: #1d8265;
         }
         
+
+        .remark-slide-container:first-of-type .remark-slide-content {
+            background-color: #f4f4f4;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .remark-slide-content {
+            padding: 1em 2em 1em 2em;
+            background: linear-gradient(270deg, #1d8265, #1d8265 5px, #fefefe 5px, #fefefe);
+
+        }
+        .remark-slide-content > h1 {
+            margin: 0em 0em 1em 0em;
+        }
+
+        .hljs-default .hljs {
+            color: #555;
+            border-radius: 4px;
+            background: #fbfbfb;
+            border: 1px solid #e6e6e6;
+        }
+
         .column {
             float:right;
             padding: 10px;

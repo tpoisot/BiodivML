@@ -1,3 +1,5 @@
 Manifest.toml
-out/jl*
+docs/jl*
 .vscode/*
+_site
+.jekyll-cache

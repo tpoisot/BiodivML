@@ -51,6 +51,10 @@ import Cairo, Fontconfig
 import Latexify
 ```
 
+```julia; echo=false
+include("../lib/theme.jl")
+```
+
 ---
 
 # Preparing the environment
@@ -315,12 +319,12 @@ So far, we have
 
 ---
 
-class: split-30
+class: split-50
 
 # Looking at relationships
 
 .column[
-```julia; label="culmen", dpi=400, results="hidden"
+```julia
 plot(
     dropmissing(penguins),
     x=:flipper_length,
@@ -328,22 +332,23 @@ plot(
     color=:species,
     Geom.ellipse,
     Geom.point
-);
+) |>
+PNG("figures/data_ellipses.png", dpi=600)
 ```
 ]
 
 .column[
-![Culmen plot](/figures/00_data_culmen_1.png)
+![Culmen plot](figures/data_ellipses.png)
 ]
 
 ---
 
-class: split-30
+class: split-50
 
 # Looking at distributions
 
 .column[
-```julia; label="bodymass", dpi=400, results="hidden"
+```julia
 plot(
     dropmissing(
         select(
@@ -356,12 +361,13 @@ plot(
     x=:bodymass,
     color=:species,
     Geom.density
-);
+) |>
+PNG("figures/data_distributions.png", dpi=600)
 ```
 ]
 
 .column[
-![Bodymass plot](/figures/00_data_bodymass_1.png)
+![Bodymass plot](figures/data_distributions.png)
 ]
 
 ---

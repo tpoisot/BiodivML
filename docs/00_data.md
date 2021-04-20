@@ -61,6 +61,7 @@ import Latexify
 
 
 
+
 ---
 
 # Preparing the environment
@@ -425,7 +426,7 @@ So far, we have
 
 ---
 
-class: split-30
+class: split-50
 
 # Looking at relationships
 
@@ -438,7 +439,8 @@ plot(
     color=:species,
     Geom.ellipse,
     Geom.point
-);
+) |>
+PNG("figures/data_ellipses.png", dpi=600)
 ```
 
 
@@ -446,12 +448,12 @@ plot(
 ]
 
 .column[
-![Culmen plot](/figures/00_data_culmen_1.png)
+![Culmen plot](figures/data_ellipses.png)
 ]
 
 ---
 
-class: split-30
+class: split-50
 
 # Looking at distributions
 
@@ -469,7 +471,8 @@ plot(
     x=:bodymass,
     color=:species,
     Geom.density
-);
+) |>
+PNG("figures/data_distributions.png", dpi=600)
 ```
 
 
@@ -477,7 +480,7 @@ plot(
 ]
 
 .column[
-![Bodymass plot](/figures/00_data_bodymass_1.png)
+![Bodymass plot](figures/data_distributions.png)
 ]
 
 ---

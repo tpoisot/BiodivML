@@ -5,12 +5,6 @@ permalink: "data"
 ---
 
 
-&nbsp;
-
----
-
-class: center, middle
-
 # Data Wrangling
 
 ## An introduction
@@ -402,4 +396,25 @@ plot(
 
 ---
 
-FIN
+# Data aggregation
+
+```julia
+using Statistics
+avg_bodymass = @linq penguins |> 
+    select(:species, :island, :bodymass) |>
+    where(.!ismissing.(:bodymass)) |>
+    by([:species, :island], mean = mean(:bodymass), std = std(:bodymass)) |>
+    orderby(:mean)
+
+Latexify.latexify(avg_bodymass, latex=false, env=:mdtable, fmt="%.2d")
+```
+
+
+|   species |    island | mean | std |
+| ---------:| ---------:| ----:| ---:|
+|    Adelie |     Dream | 3688 | 455 |
+|    Adelie | Torgersen | 3706 | 445 |
+|    Adelie |    Biscoe | 3710 | 488 |
+| Chinstrap |     Dream | 3733 | 384 |
+|    Gentoo |    Biscoe | 5076 | 504 |
+

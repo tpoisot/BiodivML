@@ -1,9 +1,11 @@
 colour_palette = Scale.color_discrete_manual(
-    colorant"#648FFF",
-    colorant"#785EF0",
-    colorant"#DC267F",
-    colorant"#FE6100",
-    colorant"#FFB000"
+    colorant"#e69f00",
+    colorant"#56b4e9",
+    colorant"#009e73",
+    colorant"#f0e442",
+    colorant"#0072b2",
+    colorant"#d55e00",
+    colorant"#cc79a7"
 )
 
 
@@ -20,7 +22,7 @@ paper_theme = Gadfly.Theme(
     key_title_color = colorant"#000000",
     guide_title_position = :center,
     colorkey_swatch_shape = :circle,
-    key_position = :top,
+    key_position = :right,
     key_title_font_size = 0mm,
     discrete_color_scale = colour_palette
 )

@@ -53,8 +53,8 @@ using DataFramesMeta
 We will also plot and pretty-print tables:
 
 ```julia
-using Gadfly
 import Cairo, Fontconfig
+using Gadfly
 import Latexify
 ```
 

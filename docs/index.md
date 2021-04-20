@@ -4,8 +4,10 @@ title: Index
 
 # Machine learning for biodiversity workshop
 
-| Class | Topic          | Slides  |
-| ----- | -------------- | ------- |
-| 1     | Data wrangling | [⏯️][00] |
+| Class | Topic                       |
+| ----- | --------------------------- |
+| 1     | [Data wrangling][wrangling] |
+| 2     | [k-NN from scracth][knn]    |
 
-[00]: data.html
+[wrangling]: data.html
+[knn]: knn.html

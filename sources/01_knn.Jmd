@@ -4,36 +4,172 @@ layout: presentation
 permalink: knn
 ---
 
-&nbsp;
-
----
-
-class: center, middle
-
 # k-Nearest Neighbors from scratch
 
 ## An introduction
 
 ---
 
-# Why?
+# Class agenda
 
-1. It's an easy algorithm to practice on
-2. It's incredibly powerful
-3. It highlights some issues
+## What we will do
+
+- Write a $k$-NN function *from scratch*
+- Use it to make predictions
+- Start thinking about validation
+
+--
+
+## Why we will do it
+
+- $k$-NN is a nice way to understand how *Julia* works
+- It's a very intuitive algorithm
+- It often works quite well!
 
 ---
 
-# What do we need?
+# Setting up the environment
 
-???
-
-notes
-
----
-
-# Code
+We will not need a lot more than for the previous module:
 
 ```julia
-2+2
+using DataFrames, DataFramesMeta
+import CSV
+import Cairo, Fontconfig
+using Gadfly
 ```
+
+To simplify our work, we will add the `StatsBase` package, which will make the
+code nicer to write:
+
+```julia
+using Statistics
+using StatsBase
+```
+
+---
+
+# Loading the data
+
+We will get the `penguins` data from the previous module -- as a reminder, we
+can load them using *pipes*:
+
+```julia; results="hidden"
+penguins = 
+    joinpath("data", "penguins.csv") |>
+    CSV.File |>
+    DataFrame |>
+    dropmissing
+```
+
+Note that we add `dropmissing` (about 10 records) to avoid having to deal with
+the issue of `Missing` data (for now).
+
+---
+
+class: split-50
+
+# OK so... what is k-NN anyways?
+
+.column[
+- A **non-parametric** method for **classification** and **regression**
+- The **class membership** or **property value** for an unknown point (*object*) is based on the properties of its neighbors
+- The **nearest neighbors** of a point (*instance*) are based on distance between values (*features*)
+- The final decision follows a (more or less complex) **voting system**
+]
+
+--
+
+.column[
+- $k$-NN needs **no training**
+- $k$ is an **hyper-parameter**, which makes the process more or less sensitive to data noise
+- Because $k$-NN relies on *distances between points*, measurements in different units shouts be standardized
+]
+
+---
+
+# Working our way through the terminology
+
+The data we will use for this module is going to be the *four quantitative
+measurements* from `penguins`. The first step will be to convert them into a
+matrix of **features**:
+
+```julia
+features = permutedims(Matrix(penguins[!,[:culmen_depth, :culmen_length, :flipper_length, :bodymass]]))
+```
+
+Every *row* is a **feature**, and every *column* is an **instance**. This is a
+convention: we deal with features as vectors, and **V**ectors are **V**ertical.
+
+The vector of features for the first instance is:
+
+$$
+v_1 = [`j features[1,1]`, `j features[2,1]`, `j features[3,1]`, `j features[4,1]`]^T
+$$
+
+---
+
+class: split-50
+
+# Transforming the data
+
+The data are not expressed in the same unit - we will apply a simple $z$-score
+transformation.
+
+
+.column[
+```julia
+μ = mean(features, dims=2)
+```
+]
+
+.column[
+```julia
+σ = std(features, dims=2)
+```
+]
+
+--
+
+We can now work on the version of the data where every features as mean 0 and
+unit standard deviation:
+
+```julia
+nf = (features .- μ)./σ
+```
+
+---
+
+class: split-30
+
+# But how does k-NN *works*?
+
+.column[
+- Get measurements for an object with **unknwon membership**
+- Find out which $k$ known instances have the **closest features**
+- Take a **majority consensus** of the class of the neighbors
+]
+
+--
+
+.column[
+If we have measured the following penguin:
+
+```julia; results="hidden"
+pingoo = vec([14.4, 46.7, 215.3, 4842.0])
+```
+
+what is its species, knowing all the data we already have?
+
+This will require a **data transformation** to express the measurements (in
+biological units) in the unitless **features space**:
+
+```julia; results="hidden"
+nd = vec((pingoo .- μ)./σ)
+```
+
+$$
+v_\text{pingoo} = [`j round(nd[1]; digits=2)`, `j round(nd[2]; digits=2)`, `j round(nd[3]; digits=2)`, `j round(nd[4]; digits=2)`]^T
+$$
+
+]

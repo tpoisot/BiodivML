@@ -373,7 +373,7 @@ plot(penguins,
 
 ---
 
-class: split-40
+class: split-30
 
 # Looking at distributions
 
@@ -383,7 +383,10 @@ plot(
     dropmissing(
         select(
         penguins,
-        [:species, :bodymass])
+        [
+            :species,
+            :bodymass
+        ])
     ),
     x=:bodymass,
     color=:species,

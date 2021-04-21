@@ -7,7 +7,7 @@ permalink: "knn"
 
 # k-Nearest Neighbors from scratch
 
-## An introduction
+## That's not my penguin!
 
 ---
 
@@ -77,6 +77,24 @@ the issue of `Missing` data (for now).
 
 ---
 
+class: split-40
+
+# That's not my penguin!
+
+.column[
+![nmp](assets/notmypenguin.jpg)
+]
+
+.column[But how do we know if this is, in fact, our penguin?
+
+How can we compare a penguin to other individuals?
+
+Can we find out to which group any arbitrary penguin belongs?
+
+**Yes**! Using $k$-NN.]
+
+---
+
 class: split-50
 
 # OK so... what is k-NN anyways?
@@ -141,11 +159,11 @@ transformation.
 
 .column[
 ```julia
-μ = mean(features, dims=2)
+μ = vec(mean(features, dims=2))
 ```
 
 ```
-4×1 Matrix{Float64}:
+4-element Vector{Float64}:
    17.160479041916172
    43.99431137724552
   201.01497005988023
@@ -159,11 +177,11 @@ transformation.
 
 .column[
 ```julia
-σ = std(features, dims=2)
+σ = vec(std(features, dims=2))
 ```
 
 ```
-4×1 Matrix{Float64}:
+4-element Vector{Float64}:
    1.9679094587143935
    5.460521483312747
   14.022175182401188
@@ -214,7 +232,7 @@ class: split-30
 If we have measured the following penguin:
 
 ```julia
-pingoo = vec([14.4, 46.7, 215.3, 4842.0])
+pingoo = [12.4, 46.7, 215.3, 4842.0]
 ```
 
 
@@ -226,14 +244,129 @@ This will require a **data transformation** to express the measurements (in
 biological units) in the unitless **features space**:
 
 ```julia
-nd = vec((pingoo .- μ)./σ)
+nd = (pingoo .- μ)./σ
 ```
 
 
 
 
 $$
-v_\text{pingoo} = [-1.4, 0.5, 1.02, 0.79]^T
+v_\text{pingoo} = [-2.42, 0.5, 1.02, 0.79]^T
 $$
 
 ]
+
+---
+
+class: split-50
+
+# Measuring the distances
+
+.column[
+We can very easily use the Euclidean distance:
+
+```julia
+distances = vec(sqrt.(sum((nf .- nd).^2.0; dims=1)))
+```
+
+
+
+
+Let's also plot it to look at the distribution:
+
+```julia
+plot(
+    y = sort(distances),
+    Geom.line,
+    Guide.xlabel("Rank of neighbor"),
+    Guide.ylabel("Distance")
+) |> PNG("figures/knndist.png", dpi=600)
+```
+
+
+
+
+Note that $k$-NN does not require to set a *distance* cutoff (so we don't care
+too much about the distance distribution)!
+]
+
+.column[
+![](figures/knndist.png)
+]
+
+---
+
+# Getting the class membership of neighbors
+
+We can use `sortperm` to return a *sorted ordering* of the distance vector, and
+then use `findall` to get the position of the distances that are the $k$
+smallest:
+
+```julia
+k = 5
+neighbors = findall(sortperm(distances) .<= k)
+neighbors'
+```
+
+```
+1×5 adjoint(::Vector{Int64}) with eltype Int64:
+ 182  201  294  308  330
+```
+
+
+
+
+
+Because we know where the **labels** are stored (`penguins.species`), we can get
+the pool of possible species for our object:
+
+```julia
+penguins.species[neighbors]
+```
+
+```
+5-element PooledArrays.PooledVector{String, UInt32, Vector{UInt32}}:
+ "Chinstrap"
+ "Chinstrap"
+ "Gentoo"
+ "Gentoo"
+ "Gentoo"
+```
+
+
+
+
+
+---
+
+# Assigning our penguin to a class
+
+Voting is, at this point, as simple as counting the number of times any species
+was recommended:
+
+```julia
+votes = countmap(penguins.species[neighbors])
+```
+
+```
+Dict{String, Int64} with 2 entries:
+  "Gentoo"    => 3
+  "Chinstrap" => 2
+```
+
+
+
+
+
+We can use some basic `sort`ing of the votes to get the most likely species for
+the sample:
+
+```julia
+first(sort(collect(votes), by = (x) -> x.second, rev=true)).first
+```
+
+```
+"Gentoo"
+```
+
+

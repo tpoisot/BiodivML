@@ -7,7 +7,7 @@ title: Index
 | Class | Topic                       |
 | ----- | --------------------------- |
 | 1     | [Data wrangling][wrangling] |
-| 2     | [k-NN from scracth][knn]    |
+| 2     | [k-NN from scratch][knn]    |
 
 [wrangling]: data.html
 [knn]: knn.html

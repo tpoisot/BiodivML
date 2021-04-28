@@ -358,11 +358,12 @@ plot(
         [:species, :bodymass]
         )
     ),
-    x=:bodymass,
+    x=:species,
+    y=:bodymass,
     color=:species,
-    Geom.density,
-    Guide.xlabel("Body mass (g)"),
-    Guide.ylabel("Density")
+    Geom.beeswarm,
+    Guide.xlabel("Species"),
+    Guide.ylabel("Body mass (g)")
 ) |>
 PNG("figures/data_distributions.png", dpi=600)
 ```

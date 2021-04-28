@@ -468,11 +468,12 @@ plot(
         [:species, :bodymass]
         )
     ),
-    x=:bodymass,
+    x=:species,
+    y=:bodymass,
     color=:species,
-    Geom.density,
-    Guide.xlabel("Body mass (g)"),
-    Guide.ylabel("Density")
+    Geom.beeswarm,
+    Guide.xlabel("Species"),
+    Guide.ylabel("Body mass (g)")
 ) |>
 PNG("figures/data_distributions.png", dpi=600)
 ```
@@ -583,10 +584,10 @@ using UUIDs #Part of the standard library
 
 ```
 4-element Vector{UUID}:
- UUID("132eb348-d9a2-4929-91ac-0f198a91f1a6")
- UUID("043d10c7-70c5-4dc2-9f61-15cce50795e8")
- UUID("3ffe6ce7-6312-4803-a374-234a4a7f82ec")
- UUID("3fba0073-ccec-4a19-bebf-a32a16d53581")
+ UUID("f5b1d40a-03ba-451f-9625-171e0831a3cc")
+ UUID("02bf49b5-f9ec-487f-85b2-de81c527dfcb")
+ UUID("58724e62-55a2-42b8-82b2-e1f4deff5065")
+ UUID("3993f9e8-0407-44d9-ad37-af9888c77a05")
 ```
 
 

@@ -584,10 +584,49 @@ using UUIDs #Part of the standard library
 
 ```
 4-element Vector{UUID}:
- UUID("f5b1d40a-03ba-451f-9625-171e0831a3cc")
- UUID("02bf49b5-f9ec-487f-85b2-de81c527dfcb")
- UUID("58724e62-55a2-42b8-82b2-e1f4deff5065")
- UUID("3993f9e8-0407-44d9-ad37-af9888c77a05")
+ UUID("d9614cda-a3ed-4e9d-832d-751992e42e1e")
+ UUID("1ec7286a-5817-4f88-a955-547bf324f8a6")
+ UUID("bf41c8fd-6ea8-471c-91af-ab359490517b")
+ UUID("81947fae-85c6-4d2c-a48a-5001abeae5df")
+```
+
+
+
+
+
+---
+
+# Counting penguins
+
+Let's write a pipeline to count the number of individuals (by sex) of each
+species on each island, and only retain the combinations with more than 20
+samples where all measurements are available:
+
+--
+
+```julia
+@linq dropmissing(penguins) |>
+    select(:island, :species, :sex) |>
+    by([:island, :species, :sex], count = length(:species)) |>
+    where(:count .>= 20) |>
+    orderby(:count)
+```
+
+```
+10×4 DataFrame
+ Row │ island     species    sex     count
+     │ String     String     String  Int64
+─────┼─────────────────────────────────────
+   1 │ Biscoe     Adelie     FEMALE     22
+   2 │ Biscoe     Adelie     MALE       22
+   3 │ Torgersen  Adelie     MALE       23
+   4 │ Torgersen  Adelie     FEMALE     24
+   5 │ Dream      Adelie     FEMALE     27
+   6 │ Dream      Adelie     MALE       28
+   7 │ Dream      Chinstrap  FEMALE     34
+   8 │ Dream      Chinstrap  MALE       34
+   9 │ Biscoe     Gentoo     FEMALE     58
+  10 │ Biscoe     Gentoo     MALE       61
 ```
 
 

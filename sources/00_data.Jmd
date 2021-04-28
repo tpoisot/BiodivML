@@ -442,3 +442,21 @@ If we have to, we can define three types of identifiers:
 using UUIDs #Part of the standard library
 [uuid4() for i in 1:4]
 ```
+
+---
+
+# Counting penguins
+
+Let's write a pipeline to count the number of individuals (by sex) of each
+species on each island, and only retain the combinations with more than 20
+samples where all measurements are available:
+
+--
+
+```julia
+@linq dropmissing(penguins) |>
+    select(:island, :species, :sex) |>
+    by([:island, :species, :sex], count = length(:species)) |>
+    where(:count .>= 20) |>
+    orderby(:count)
+```

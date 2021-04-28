@@ -584,10 +584,10 @@ using UUIDs #Part of the standard library
 
 ```
 4-element Vector{UUID}:
- UUID("d9614cda-a3ed-4e9d-832d-751992e42e1e")
- UUID("1ec7286a-5817-4f88-a955-547bf324f8a6")
- UUID("bf41c8fd-6ea8-471c-91af-ab359490517b")
- UUID("81947fae-85c6-4d2c-a48a-5001abeae5df")
+ UUID("5a7cf2eb-0a27-4058-864e-e21999157571")
+ UUID("07a67dd8-4860-4f5b-ab8f-5f0c0c195827")
+ UUID("9c01aa89-0fad-4568-ad08-c1eabbd9998a")
+ UUID("f32bb4ca-1f2f-4db2-a94c-ef2f11cc3555")
 ```
 
 
@@ -630,3 +630,38 @@ samples where all measurements are available:
 ```
 
 
+
+
+
+---
+
+class: split-50
+
+# Difference in flipper size across islands?
+
+
+.column[
+```julia
+tdf = @linq dropmissing(penguins) |>
+    where(:species .== "Adelie") |>
+    select(:island, :sex, :flipper_length)
+
+plot(
+    tdf,
+    x=:island,
+    y=:flipper_length,
+    color=:sex,
+    Geom.beeswarm,
+    Guide.xlabel("Island"),
+    Guide.ylabel("Flipper length (mm)")
+) |>
+PNG("figures/data_islands.png", dpi=600)
+```
+
+
+
+]
+
+.column[
+![Bodymass plot](figures/data_islands.png)
+]

@@ -460,3 +460,33 @@ samples where all measurements are available:
     where(:count .>= 20) |>
     orderby(:count)
 ```
+
+---
+
+class: split-50
+
+# Difference in flipper size across islands?
+
+
+.column[
+```julia
+tdf = @linq dropmissing(penguins) |>
+    where(:species .== "Adelie") |>
+    select(:island, :sex, :flipper_length)
+
+plot(
+    tdf,
+    x=:island,
+    y=:flipper_length,
+    color=:sex,
+    Geom.beeswarm,
+    Guide.xlabel("Island"),
+    Guide.ylabel("Flipper length (mm)")
+) |>
+PNG("figures/data_islands.png", dpi=600)
+```
+]
+
+.column[
+![Bodymass plot](figures/data_islands.png)
+]

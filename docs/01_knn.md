@@ -370,3 +370,60 @@ first(sort(collect(votes), by = (x) -> x.second, rev=true)).first
 ```
 
 
+
+
+
+---
+
+# The "landscape" of k-NN predictions
+
+We will assume that we know of *two* values, and ignore two others:
+
+
+```julia
+ftval = LinRange(-2, 2, 50)
+ftcomb = vec(collect(Base.product(ftval, ftval)))
+decisions = []
+for (f1, f2) in ftcomb
+    tv = [f1, f2, 0.0, 0.0]
+    distances = vec(sqrt.(sum((nf .- tv).^2.0; dims=1)))
+    neighbors = findall(sortperm(distances) .<= 5)
+    votes = countmap(penguins.species[neighbors])
+    decision = first(sort(collect(votes), by = (x) -> x.second, rev=true)).first
+    push!(decisions, decision)
+end
+```
+
+
+
+
+---
+
+class: split-50
+
+# Visualizing the predictions (k=5)
+
+.column[
+```julia
+f1 = [first(c) for c in ftcomb]
+f2 = [last(c) for c in ftcomb]
+plot(
+    x = f1, y = f2,
+    color=decisions,
+    Geom.rectbin,
+    Guide.xlabel("Culmen depth (relative)"),
+    Guide.ylabel("Culmen length (relative)"),
+    Coord.cartesian(
+        xmin=-2, xmax=2, ymin=-2, ymax=2, fixed=true
+    )
+) |> PNG("figures/knnsim.png", dpi=600)
+```
+
+
+
+
+]
+
+.column[
+![](figures/knnsim.png)
+]

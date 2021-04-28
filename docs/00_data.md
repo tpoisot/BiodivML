@@ -509,3 +509,84 @@ Latexify.latexify(avg_bodymass, latex=false, env=:mdtable, fmt="%.2d")
 | Chinstrap |     Dream | 3733 | 384 |
 |    Gentoo |    Biscoe | 5076 | 504 |
 
+
+
+
+---
+
+# The grammar of data
+
+| Semantics | Julia (*DataFramesMeta*) | R (*dplyr*) |
+|----|----|----|
+| Selecting data | `@where` | `filter` |
+| Transforming data | `@transform` | `mutate` |
+| Grouping and summarizing | `@by` | `group_by` |
+| Sorting rows | `@orderby` | `arrange` |
+| Selecting columns | `@select` | `select` |
+
+--
+
+**Note that** this assumes that the data are *wide*, *i.e.* each observation is
+a row, and each variable is a column.
+
+---
+
+# Let's mess some data up!
+
+The `penguins` dataset is in the *wide* format, which has each observation in
+its own row. We can transform it to the *long* format using `stack`:
+
+```julia
+stack(penguins, [:culmen_length, :culmen_depth, :flipper_length, :bodymass]) |>
+    df -> Latexify.latexify(df[1:7,:], latex=false, env=:mdtable, fmt="%.2d")
+```
+
+
+| species | region |    island |     sex |      variable |   value |
+| -------:| ------:| ---------:| -------:| -------------:| -------:|
+|  Adelie | Anvers | Torgersen |    MALE | culmen_length |      39 |
+|  Adelie | Anvers | Torgersen |  FEMALE | culmen_length |      40 |
+|  Adelie | Anvers | Torgersen |  FEMALE | culmen_length |      40 |
+|  Adelie | Anvers | Torgersen | missing | culmen_length | missing |
+|  Adelie | Anvers | Torgersen |  FEMALE | culmen_length |      37 |
+|  Adelie | Anvers | Torgersen |    MALE | culmen_length |      39 |
+|  Adelie | Anvers | Torgersen |  FEMALE | culmen_length |      39 |
+
+
+
+
+---
+
+# Is the process reversible?
+
+In the previous example, we *cannot* get back from the long data to the wide
+one, because **observations have no identifiers**.
+
+If we have to, we can define three types of identifiers:
+
+--
+
+**Index-based**: `1 2 3 4 ...`
+
+--
+
+**Semantics-based**: `ISLAND_species_number`
+
+--
+
+**Universally unique identifiers:**
+
+```julia
+using UUIDs #Part of the standard library
+[uuid4() for i in 1:4]
+```
+
+```
+4-element Vector{UUID}:
+ UUID("132eb348-d9a2-4929-91ac-0f198a91f1a6")
+ UUID("043d10c7-70c5-4dc2-9f61-15cce50795e8")
+ UUID("3ffe6ce7-6312-4803-a374-234a4a7f82ec")
+ UUID("3fba0073-ccec-4a19-bebf-a32a16d53581")
+```
+
+

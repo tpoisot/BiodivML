@@ -386,3 +386,58 @@ avg_bodymass = @linq penguins |>
 
 Latexify.latexify(avg_bodymass, latex=false, env=:mdtable, fmt="%.2d")
 ```
+
+---
+
+# The grammar of data
+
+| Semantics | Julia (*DataFramesMeta*) | R (*dplyr*) |
+|----|----|----|
+| Selecting data | `@where` | `filter` |
+| Transforming data | `@transform` | `mutate` |
+| Grouping and summarizing | `@by` | `group_by` |
+| Sorting rows | `@orderby` | `arrange` |
+| Selecting columns | `@select` | `select` |
+
+--
+
+**Note that** this assumes that the data are *wide*, *i.e.* each observation is
+a row, and each variable is a column.
+
+---
+
+# Let's mess some data up!
+
+The `penguins` dataset is in the *wide* format, which has each observation in
+its own row. We can transform it to the *long* format using `stack`:
+
+```julia
+stack(penguins, [:culmen_length, :culmen_depth, :flipper_length, :bodymass]) |>
+    df -> Latexify.latexify(df[1:7,:], latex=false, env=:mdtable, fmt="%.2d")
+```
+
+---
+
+# Is the process reversible?
+
+In the previous example, we *cannot* get back from the long data to the wide
+one, because **observations have no identifiers**.
+
+If we have to, we can define three types of identifiers:
+
+--
+
+**Index-based**: `1 2 3 4 ...`
+
+--
+
+**Semantics-based**: `ISLAND_species_number`
+
+--
+
+**Universally unique identifiers:**
+
+```julia
+using UUIDs #Part of the standard library
+[uuid4() for i in 1:4]
+```

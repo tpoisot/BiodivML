@@ -583,11 +583,11 @@ using UUIDs #Part of the standard library
 ```
 
 ```
-4-element Vector{UUID}:
- UUID("a52eccec-3e51-4b7b-9f93-e21e8f2075d3")
- UUID("4c405efc-a068-49ed-8b8a-f50c4130ca5c")
- UUID("e73f3f0d-6149-4873-806d-9d2de895a292")
- UUID("beb63d12-82cd-48ee-87d9-acce6ca974a5")
+4-element Vector{Base.UUID}:
+ UUID("163160f8-3c17-4aca-a091-4b2a2eb6c459")
+ UUID("3126e65b-76f3-4701-81a1-b11ccb68f185")
+ UUID("fef2d88e-e441-4c6f-b8c2-c4e6931bdc58")
+ UUID("0431ded2-df12-472d-929c-cf4ffe9ff04b")
 ```
 
 

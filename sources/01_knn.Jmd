@@ -311,3 +311,127 @@ plot(
 .column[
 ![](figures/knnsim.png)
 ]
+
+---
+
+# Intermezzo: turning k-NN into a function
+
+```julia; results="hidden"
+function knn(v::Vector{TF}, features::Matrix{TF}, labels::Vector{TL}; k::Integer=5) where {TF <: Number, TL}
+    @assert length(v) == size(features, 1)
+    @assert length(labels) == size(features, 2)
+    @assert 1 <= k <= length(labels)
+
+    Δ = vec(sqrt.(sum((v .- features).^2.0; dims=1)))
+
+    neighbors = findall(sortperm(Δ) .<= k)
+    votes = countmap(labels[neighbors])
+    decision = first(sort(collect(votes), by = (x) -> x.second, rev=true)).first
+
+    return decision
+end
+```
+
+```julia; results="hidden"
+labels = vec(String.(penguins.species))
+features = nf
+```
+
+---
+
+# Cross validation
+
+We want to **evaluate** the model on data it **has not seen before**. We call
+this **cross-validation**.
+
+--
+
+**Holdout**: the dataset is split in two (training and testing), and we measure
+the performance by applying to the model on the testing set, but only informing
+it of the training set.
+
+--
+
+**K-fold**: we divide the dataset in $K$ samples, train it on
+$K-1$, and evaluate on the remaining one.
+
+--
+
+**Leave-One-Out**: we apply K-fold validation, where $K = n-1$, so that *every
+single object* in the dataset is evaluated as a testing set.
+
+---
+
+# Measuring accuracy
+
+One important decision to make when evaluating a model is to decide *which
+function is used to measure its performance*.
+
+We will see a lot more when working on binary classifiers.
+
+For the moment, let's have a look at the accurracy function: the proportion of
+correct guesses.
+
+--
+
+```julia; results="hidden"
+function accuracy(x::Vector{T}, y::Vector{T}) where {T}
+    @assert length(x) == length(y)
+    return sum(x .== y)/length(x)
+end
+```
+
+---
+
+# Leave-One-Out cross validation
+
+```julia
+guesses = similar(labels)
+
+function loocv!(guesses, features, labels; k=3)
+    for i in 1:size(features, 2)
+        tf = features[:, setdiff(1:end, i)]
+        tl = labels[setdiff(1:end, i)]
+        guesses[i] = knn(vec(features[:,i]), tf, tl; k=k)
+    end
+    return accuracy(guesses, labels)
+end
+
+function loocv(features, labels; k=3)
+    guesses = similar(labels)
+    return loocv!(guesses, features, labels; k=k)
+end
+
+loocv!(guesses, features, labels)
+```
+
+---
+
+class: split-50
+
+# Can we find the "best" k?
+
+.column[
+```julia
+K = collect(1:20)
+
+acc = [
+    loocv!(
+        guesses, features, labels; k=k
+    ) for k in K
+]
+
+plot(
+    x = K, y = acc,
+    Geom.point,
+    Geom.line,
+    Guide.xlabel("Number of neighbors"),
+    Guide.ylabel("Accuracy"),
+) |> PNG("figures/knnloo.png", dpi=600) 
+```
+
+]
+
+.column[
+![](figures/knnloo.png)
+]

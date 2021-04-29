@@ -381,7 +381,7 @@ We will assume that we know of *two* values, and ignore two others:
 
 
 ```julia
-ftval = LinRange(-2, 2, 50)
+ftval = LinRange(-3, 3, 90)
 ftcomb = vec(collect(Base.product(ftval, ftval)))
 decisions = []
 for (f1, f2) in ftcomb
@@ -414,7 +414,7 @@ plot(
     Guide.xlabel("Culmen depth (relative)"),
     Guide.ylabel("Culmen length (relative)"),
     Coord.cartesian(
-        xmin=-2, xmax=2, ymin=-2, ymax=2, fixed=true
+        xmin=-3, xmax=3, ymin=-3, ymax=3, fixed=true
     )
 ) |> PNG("figures/knnsim.png", dpi=600)
 ```

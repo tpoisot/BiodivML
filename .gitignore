@@ -3,3 +3,4 @@ docs/jl*
 .vscode/*
 _site
 .jekyll-cache
+vscjl*

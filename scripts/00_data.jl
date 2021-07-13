@@ -32,7 +32,7 @@ for entry in identifiers
     penguin, identifier = entry
     datafile = joinpath("data", "penguins", "$(penguin).csv")
     if isfile(datafile)
-        nothing
+        continue
     else
         download(uri_root * identifier, datafile)
     end

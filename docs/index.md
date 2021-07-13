@@ -37,6 +37,10 @@ from within the Julia REPL.
 |:-----:|-----------------------------|-------------------------------|
 |   1   | [Data wrangling][wrangling] | [data.jl](scripts/00_data.jl) |
 |   2   | [k-NN from scratch][knn]    | [knn.jl](scripts/01_knn.jl)   |
+|   3   | Trees and forests           |                               |
+|   4   | Boosted Regression Trees    |                               |
+|   5   | Latent variables            |                               |
+|   6   | Artificial Neural Networks  |                               |
 
 [wrangling]: data.html
 [knn]: knn.html

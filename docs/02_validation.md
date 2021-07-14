@@ -1,8 +1,9 @@
 ---
-title: Validation for classifiers
-layout: presentation
-permalink: validation
+title: "Validation for classifiers"
+layout: "presentation"
+permalink: "validation"
 ---
+
 
 # Validation for classifiers
 
@@ -39,6 +40,9 @@ import Cairo, Fontconfig
 using Gadfly
 ```
 
+
+
+
 To simplify our work, we will add the `StatsBase` package, which will make the
 code nicer to write:
 
@@ -47,6 +51,9 @@ using Statistics, LinearAlgebra
 using Distributions
 using StatsBase
 ```
+
+
+
 
 --
 
@@ -61,13 +68,16 @@ instead of `DataFrame`.
 We will get the `penguins` data from the previous module -- as a reminder, we
 can load them using *pipes*:
 
-```julia; results="hidden"
+```julia
 penguins = 
     joinpath("data", "penguins.csv") |>
     CSV.File |>
     DataFrame |>
     dropmissing
 ```
+
+
+
 
 Note that we add `dropmissing` (about 10 records) to avoid having to deal with
 the issue of `Missing` data (for now).
@@ -135,19 +145,39 @@ morphodist = combine(group_species,
 morphodist.bodymass[1] #Adelie penguin bodymass
 ```
 
+```
+Distributions.Normal{Float64}(μ=3706.1643835616437, σ=458.6201347129234)
+```
+
+
+
+
+
 ---
 
 # Assigning a sample to a class (part 1)
 
 Let's draw a penguin at random:
 
-~~~julia
+```julia
 i = rand(1:size(penguins,1))
 randompenguin = penguins[
     i,
     [:species, :culmen_length, :culmen_depth, :flipper_length, :bodymass]
 ] |> DataFrame
-~~~
+```
+
+```
+1×5 DataFrame
+ Row │ species  culmen_length  culmen_depth  flipper_length  bodymass
+     │ String   Float64        Float64       Int64           Int64
+─────┼────────────────────────────────────────────────────────────────
+   1 │ Adelie            34.6          17.2             189      3200
+```
+
+
+
+
 
 ---
 
@@ -155,7 +185,7 @@ randompenguin = penguins[
 
 We can now get its probability of `randompenguin` belonging to every class:
 
-~~~julia
+```julia
 features = [:culmen_length, :culmen_depth, :flipper_length, :bodymass]
 sp = morphodist.species
 
@@ -168,7 +198,19 @@ for (i,ft) in enumerate(features)
 end
 
 p
-~~~
+```
+
+```
+4×3 Matrix{Float64}:
+ 0.0425706    1.35455e-5   2.17571e-5
+ 0.210161     0.197154     0.0334836
+ 0.0603021    0.035394     5.74265e-6
+ 0.000473101  0.000396675  6.22896e-7
+```
+
+
+
+
 
 ---
 
@@ -177,17 +219,33 @@ p
 We can get our matrix of probability, and multiply its *columns* to get the
 overall score, then feed this to `argmax`:
 
-~~~julia
+```julia
 class_k = vec(prod(p; dims=2)) |> argmax
-~~~
+```
+
+```
+2
+```
+
+
+
+
 
 We can finally check which class this was actually:
 
-~~~julia
+```julia
 morphodist.species[class_k]
-~~~
+```
 
-Interestingly, the correct class was `j randompenguin[1,1]`, but this is
+```
+"Chinstrap"
+```
+
+
+
+
+
+Interestingly, the correct class was "Adelie", but this is
 not the answer we get. So, how do we evalue the model performance?
 
 ---
@@ -196,7 +254,7 @@ not the answer we get. So, how do we evalue the model performance?
 
 We will perform the NBC step for all samples in the dataset.
 
-~~~julia
+```julia
 predictions = eltype(morphodist.species)[]
 p = zeros(Float64, (length(features), length(sp)))
 for i in 1:size(penguins, 1)
@@ -208,14 +266,28 @@ for i in 1:size(penguins, 1)
     class_k = argmax(vec(prod(p; dims=2)))
     push!(predictions, morphodist.species[class_k])
 end
-~~~
+```
+
+
+
 
 Note that this leads to some data re-use, but we used the summary statistics
 and not the raw data, so it's cool.
 
-~~~julia
+```julia
 countmap(predictions)
-~~~
+```
+
+```
+Dict{String, Int64} with 3 entries:
+  "Adelie"    => 89
+  "Gentoo"    => 17
+  "Chinstrap" => 228
+```
+
+
+
+
 
 ---
 
@@ -224,10 +296,13 @@ countmap(predictions)
 The only information we care about is whether the model works for Chinstrap
 penguins - therefore, we can transform the classified `String`s into `Bool`s.
 
-~~~julia; results="hidden"
+```julia
 obs = penguins.species .== "Chinstrap"
 prd = predictions .== "Chinstrap"
-~~~
+```
+
+
+
 
 We will compare these two values in a **confusion matrix**:
 
@@ -242,20 +317,33 @@ We will compare these two values in a **confusion matrix**:
 
 We can get the components of the confusion matrix with simple boolean operations:
 
-~~~julia
+```julia
 TP = sum(obs .& (obs.&prd))
 FN = sum(obs .& (.!(obs.&prd)))
 FP = sum(.!obs .& (.!obs .& prd))
 TN = sum(.!obs .& (.!obs .& .!prd))
 conf = [TP FN; FP TN]
-~~~
+```
+
+```
+2×2 Matrix{Int64}:
+  49  19
+ 179  87
+```
+
+
+
+
 
 Note that the sum of the confusion matrix should be the length of the
 predictions, which we can check with `@assert`:
 
-~~~julia
+```julia
 @assert (TP + FN +FP + TN) == length(obs)
-~~~
+```
+
+
+
 
 ---
 
@@ -264,13 +352,21 @@ predictions, which we can check with `@assert`:
 Last time, we defined accuracy as the proportion of correct guesses - we
 can get it by dividing the trace of the matrix by the sum of the matrix:
 
-~~~julia
+```julia
 sum(diag(conf))/sum(conf)
-~~~
+```
+
+```
+0.40718562874251496
+```
+
+
+
+
 
 It's **pretty bad**! This is a good opportunity to figure out why and how
 our model is misbehaving. But first, let's redefine a few terms:
 
 | Term      | Definition          | How to get it | Value       |
 |-----------|---------------------|---------------|-------------|
-| Incidence | Number of positives | `TP + FN`     | `j TP + FN` |
+| Incidence | Number of positives | `TP + FN`     | 68 |

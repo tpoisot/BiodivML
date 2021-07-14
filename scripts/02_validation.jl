@@ -70,3 +70,30 @@ conf = [TP FN; FP TN]
 @assert (TP + FN + FP + TN) == length(obs)
 
 sum(diag(conf)) / sum(conf)
+
+TPR = TP / (TP + FN)
+
+TNR = TN / (TN + FP)
+
+FPR = FP / (FP + TN)
+
+FNR = FN / (FN + TP)
+
+PPV = TP / (TP + FP)
+
+NPV = TN / (TN + FN)
+
+FDR = FP / (FP + TP)
+
+FOR = FN / (FN + TN)
+
+ACC = (TP + TN) / (TP + TN + FP + FN)
+
+BCC = (TPR + TNR) / 2.0
+
+INF = TPR + TNR - 1
+
+N = TP + FP + TN + FN
+RCC = ((TN + FP) * (TN + FN) + (FN + TP) * (FP + TP)) / (N * N)
+
+CHN = (ACC - RCC) / (1.0 - RCC)

@@ -584,10 +584,10 @@ using UUIDs #Part of the standard library
 
 ```
 4-element Vector{Base.UUID}:
- UUID("4cd10c5d-d67d-4202-85b4-8dd8b28cfd58")
- UUID("59a78a48-313e-4fd8-a1e8-cc86d0610201")
- UUID("1229a317-0767-428c-9429-5c9ece317df5")
- UUID("ef994dcd-09e8-421d-9efb-0d03d5b8718e")
+ UUID("4e34bb81-6a5d-4aaf-b867-21e0cd3edaa7")
+ UUID("3b1eed17-f1c4-4d7c-ae48-cdd9effb67f6")
+ UUID("0679cd40-6e4f-425b-a325-c0c662ac2c95")
+ UUID("aacc25a8-7628-43a9-82a3-b3db54842103")
 ```
 
 

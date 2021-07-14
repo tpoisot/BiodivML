@@ -172,7 +172,7 @@ randompenguin = penguins[
  Row │ species  culmen_length  culmen_depth  flipper_length  bodymass
      │ String   Float64        Float64       Int64           Int64
 ─────┼────────────────────────────────────────────────────────────────
-   1 │ Adelie            34.6          17.2             189      3200
+   1 │ Gentoo            52.2          17.1             228      5400
 ```
 
 
@@ -202,10 +202,10 @@ p
 
 ```
 4×3 Matrix{Float64}:
- 0.0425706    1.35455e-5   2.17571e-5
- 0.210161     0.197154     0.0334836
- 0.0603021    0.035394     5.74265e-6
- 0.000473101  0.000396675  6.22896e-7
+ 4.95892e-7  0.0718783   0.0417242
+ 0.193901    0.178649    0.041799
+ 2.84698e-9  2.12674e-6  0.0158058
+ 9.49334e-7  8.54096e-8  0.000659074
 ```
 
 
@@ -245,7 +245,7 @@ morphodist.species[class_k]
 
 
 
-Interestingly, the correct class was "Adelie", but this is
+Interestingly, the correct class was "Gentoo", but this is
 not the answer we get. So, how do we evalue the model performance?
 
 ---
@@ -365,8 +365,285 @@ sum(diag(conf))/sum(conf)
 
 
 It's **pretty bad**! This is a good opportunity to figure out why and how
-our model is misbehaving. But first, let's redefine a few terms:
+our model is misbehaving. 
 
-| Term      | Definition          | How to get it | Value       |
-|-----------|---------------------|---------------|-------------|
-| Incidence | Number of positives | `TP + FN`     | 68 |
+---
+
+class: split-50
+
+# Measures of bias
+
+The first thing we want to know is whether the model is *biased* towards
+making certain predictions.
+
+.column[
+True Positive Rate (`TPR`):
+
+```julia
+TPR = TP/(TP+FN)
+```
+
+```
+0.7205882352941176
+```
+
+
+
+
+
+True Negative Rate (`TNR`):
+
+```julia
+TNR = TN/(TN+FP)
+```
+
+```
+0.32706766917293234
+```
+
+
+
+
+]
+
+.column[
+False Positive Rate (`FPR`):
+
+```julia
+FPR = FP/(FP+TN)
+```
+
+```
+0.6729323308270677
+```
+
+
+
+
+
+False Negative Rate (`FNR`):
+
+```julia
+FNR = FN/(FN+TP)
+```
+
+```
+0.27941176470588236
+```
+
+
+
+
+]
+
+This classifier correctly identifies a Chinstrap as a Chinstrap 72% of the
+time, but identifies something else as a Chinstrap 67% of the time!
+
+In other words, it's predicting *a lot more* Chinstrap penguins than we
+should expect.
+
+---
+
+class: split-50
+
+# Measures of predictive potential
+
+The confusion matrix can also inform us about *when* we can trust a model:
+
+.column[
+Positive Predictive Value (`PPV`):
+
+```julia
+PPV = TP/(TP+FP)
+```
+
+```
+0.2149122807017544
+```
+
+
+
+
+
+Negative Predictive Value (`NPV`):
+
+```julia
+NPV = TN/(TN+FN)
+```
+
+```
+0.8207547169811321
+```
+
+
+
+
+]
+
+.column[
+False Discovery Rate (`FDR`):
+
+```julia
+FDR = FP/(FP+TP)
+```
+
+```
+0.7850877192982456
+```
+
+
+
+
+
+False Omission Rate (`FOR`):
+
+```julia
+FOR = FN/(FN+TN)
+```
+
+```
+0.1792452830188679
+```
+
+
+
+
+]
+
+A prediction of "not a Chinstrap" is true about 82% of the time (it's
+great!). A prediction of "Chinstrap" is only true 21% of the time (it's
+not ideal!).
+
+---
+
+class: split-50
+
+# Broader measures of model performance
+
+We can take a broader view of model "performance":
+
+.column[
+Accuracy (`ACC`):
+
+```julia
+ACC = (TP+TN)/(TP+TN+FP+FN)
+```
+
+```
+0.40718562874251496
+```
+
+
+
+
+
+Balanced Accuracy (`BCC`):
+
+```julia
+BCC = (TPR + TNR) / 2.0
+```
+
+```
+0.523827952233525
+```
+
+
+
+
+]
+
+.column[
+Informedness (`INF`):
+
+```julia
+INF = TPR + TNR - 1
+```
+
+```
+0.047655904467049925
+```
+
+
+
+
+
+]
+
+The balanced accuracy (accounting for class prevalence) is **higher** than
+the standard accuracy, suggesting a very bad model. The informedness is
+essentially 0, meaning that the model is not giving useful information.
+
+---
+
+class: split-50
+
+# Comparison to random expectation
+
+.column[
+Random Accuracy (`RCC`):
+
+```julia
+N = TP+FP+TN+FN
+RCC = ((TN + FP) * (TN + FN) +
+    (FN + TP) * (FP + TP)) / (N * N)
+```
+
+```
+0.3917315070457887
+```
+
+
+
+
+
+Cohen's κ (`CHN`):
+
+```julia
+CHN =  (ACC - RCC) / (1.0 - RCC)
+```
+
+```
+0.025406743692525297
+```
+
+
+
+
+]
+
+.column[
+
+The *random* accuracy is approximatively equal to the measured
+accuracy! Cohen's statistic is, therefore, very close to 0, which indicates
+a model with no predictive value whatsoever.
+
+Taken together, these measures show that the model is **not usable to tell
+whether a sample is a Chinstrap penguin**.
+
+]
+
+---
+
+# Wrapping up
+
+## About the model
+
+- it cannot be used for predictions!
+- it has a systematic bias towards over-predicting Chinstrap as a class
+- the predictions are barely better than they would at random
+
+--
+
+## About validation
+
+- need to look at a variety of measures
+- in some cases, biases can be acceptable
+- the initial values of these measures provide a good baseline to see if we improve a model
+
+---
+
+# Open discussion: why is this model so bad?
+
+Think about the assumptions of Naive Bayesian Classifiers - are some of
+these assumptions likely to decrease the performance of this model, based
+on characteristics of the dataset?

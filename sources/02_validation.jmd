@@ -269,8 +269,181 @@ sum(diag(conf))/sum(conf)
 ~~~
 
 It's **pretty bad**! This is a good opportunity to figure out why and how
-our model is misbehaving. But first, let's redefine a few terms:
+our model is misbehaving. 
 
-| Term      | Definition          | How to get it | Value       |
-|-----------|---------------------|---------------|-------------|
-| Incidence | Number of positives | `TP + FN`     | `j TP + FN` |
+---
+
+class: split-50
+
+# Measures of bias
+
+The first thing we want to know is whether the model is *biased* towards
+making certain predictions.
+
+.column[
+True Positive Rate (`TPR`):
+
+~~~julia
+TPR = TP/(TP+FN)
+~~~
+
+True Negative Rate (`TNR`):
+
+~~~julia
+TNR = TN/(TN+FP)
+~~~
+]
+
+.column[
+False Positive Rate (`FPR`):
+
+~~~julia
+FPR = FP/(FP+TN)
+~~~
+
+False Negative Rate (`FNR`):
+
+~~~julia
+FNR = FN/(FN+TP)
+~~~
+]
+
+This classifier correctly identifies a Chinstrap as a Chinstrap 72% of the
+time, but identifies something else as a Chinstrap 67% of the time!
+
+In other words, it's predicting *a lot more* Chinstrap penguins than we
+should expect.
+
+---
+
+class: split-50
+
+# Measures of predictive potential
+
+The confusion matrix can also inform us about *when* we can trust a model:
+
+.column[
+Positive Predictive Value (`PPV`):
+
+~~~julia
+PPV = TP/(TP+FP)
+~~~
+
+Negative Predictive Value (`NPV`):
+
+~~~julia
+NPV = TN/(TN+FN)
+~~~
+]
+
+.column[
+False Discovery Rate (`FDR`):
+
+~~~julia
+FDR = FP/(FP+TP)
+~~~
+
+False Omission Rate (`FOR`):
+
+~~~julia
+FOR = FN/(FN+TN)
+~~~
+]
+
+A prediction of "not a Chinstrap" is true about 82% of the time (it's
+great!). A prediction of "Chinstrap" is only true 21% of the time (it's
+not ideal!).
+
+---
+
+class: split-50
+
+# Broader measures of model performance
+
+We can take a broader view of model "performance":
+
+.column[
+Accuracy (`ACC`):
+
+~~~julia
+ACC = (TP+TN)/(TP+TN+FP+FN)
+~~~
+
+Balanced Accuracy (`BCC`):
+
+~~~julia
+BCC = (TPR + TNR) / 2.0
+~~~
+]
+
+.column[
+Informedness (`INF`):
+
+~~~julia
+INF = TPR + TNR - 1
+~~~
+
+]
+
+The balanced accuracy (accounting for class prevalence) is **higher** than
+the standard accuracy, suggesting a very bad model. The informedness is
+essentially 0, meaning that the model is not giving useful information.
+
+---
+
+class: split-50
+
+# Comparison to random expectation
+
+.column[
+Random Accuracy (`RCC`):
+
+~~~julia
+N = TP+FP+TN+FN
+RCC = ((TN + FP) * (TN + FN) +
+    (FN + TP) * (FP + TP)) / (N * N)
+~~~
+
+Cohen's κ (`CHN`):
+
+~~~julia
+CHN =  (ACC - RCC) / (1.0 - RCC)
+~~~
+]
+
+.column[
+
+The *random* accuracy is approximatively equal to the measured
+accuracy! Cohen's statistic is, therefore, very close to 0, which indicates
+a model with no predictive value whatsoever.
+
+Taken together, these measures show that the model is **not usable to tell
+whether a sample is a Chinstrap penguin**.
+
+]
+
+---
+
+# Wrapping up
+
+## About the model
+
+- it cannot be used for predictions!
+- it has a systematic bias towards over-predicting Chinstrap as a class
+- the predictions are barely better than they would at random
+
+--
+
+## About validation
+
+- need to look at a variety of measures
+- in some cases, biases can be acceptable
+- the initial values of these measures provide a good baseline to see if we improve a model
+
+---
+
+# Open discussion: why is this model so bad?
+
+Think about the assumptions of Naive Bayesian Classifiers - are some of
+these assumptions likely to decrease the performance of this model, based
+on characteristics of the dataset?

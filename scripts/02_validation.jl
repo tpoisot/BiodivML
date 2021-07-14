@@ -40,8 +40,9 @@ end
 
 p
 
-class_k = vec(prod(p; dims=2)) |> argmax
+vec(prod(p; dims=1))
 
+class_k = vec(prod(p; dims=1)) |> argmax
 morphodist.species[class_k]
 
 predictions = eltype(morphodist.species)[]
@@ -52,11 +53,9 @@ for i in 1:size(penguins, 1)
             p[k, j] = pdf(morphodist[j, ft], penguins[i, ft])
         end
     end
-    class_k = argmax(vec(prod(p; dims=2)))
+    class_k = argmax(vec(prod(p; dims=1)))
     push!(predictions, morphodist.species[class_k])
 end
-
-countmap(predictions)
 
 obs = penguins.species .== "Chinstrap"
 prd = predictions .== "Chinstrap"

@@ -175,20 +175,21 @@ p
 # Assigning a sample to a class (part 3)
 
 We can get our matrix of probability, and multiply its *columns* to get the
-overall score, then feed this to `argmax`:
+overall score:
 
 ~~~julia
-class_k = vec(prod(p; dims=2)) |> argmax
+vec(prod(p; dims=1))
 ~~~
 
-We can finally check which class this was actually:
+We then feed this to `argmax`, and have a look at the class we get in return:
 
 ~~~julia
+class_k = vec(prod(p; dims=1)) |> argmax
 morphodist.species[class_k]
 ~~~
 
-Interestingly, the correct class was `j randompenguin[1,1]`, but this is
-not the answer we get. So, how do we evalue the model performance?
+This seems to work for this sample - how do we evaluate the overall success
+of the model?
 
 ---
 
@@ -205,17 +206,13 @@ for i in 1:size(penguins, 1)
             p[k,j] = pdf(morphodist[j,ft], penguins[i,ft])
         end
     end
-    class_k = argmax(vec(prod(p; dims=2)))
+    class_k = argmax(vec(prod(p; dims=1)))
     push!(predictions, morphodist.species[class_k])
 end
 ~~~
 
 Note that this leads to some data re-use, but we used the summary statistics
 and not the raw data, so it's cool.
-
-~~~julia
-countmap(predictions)
-~~~
 
 ---
 
@@ -268,8 +265,8 @@ can get it by dividing the trace of the matrix by the sum of the matrix:
 sum(diag(conf))/sum(conf)
 ~~~
 
-It's **pretty bad**! This is a good opportunity to figure out why and how
-our model is misbehaving. 
+It's **pretty good**! But let's not take any risk, and try to understand in
+depth how good the model really is.
 
 ---
 
@@ -308,11 +305,11 @@ FNR = FN/(FN+TP)
 ~~~
 ]
 
-This classifier correctly identifies a Chinstrap as a Chinstrap 72% of the
-time, but identifies something else as a Chinstrap 67% of the time!
+This classifier correctly identifies a Chinstrap as a Chinstrap 92% of the
+time, and identifies something else as a Chinstrap only 2% of the time!
 
-In other words, it's predicting *a lot more* Chinstrap penguins than we
-should expect.
+In other words, it's **really good** at telling if something is a Chinstrap
+penguin or not.
 
 ---
 
@@ -350,9 +347,10 @@ FOR = FN/(FN+TN)
 ~~~
 ]
 
-A prediction of "not a Chinstrap" is true about 82% of the time (it's
-great!). A prediction of "Chinstrap" is only true 21% of the time (it's
-not ideal!).
+A prediction of "not a Chinstrap" is true about 98% of the time (it's
+great!). A prediction of "Chinstrap" is only true 91% of the time (it's still
+pretty good!). The risks of *missing* and *falsely detecting* a Chinstrap
+are respectively 1% and 8%.
 
 ---
 
@@ -385,9 +383,10 @@ INF = TPR + TNR - 1
 
 ]
 
-The balanced accuracy (accounting for class prevalence) is **higher** than
-the standard accuracy, suggesting a very bad model. The informedness is
-essentially 0, meaning that the model is not giving useful information.
+The balanced accuracy (accounting for class prevalence) is **similar**
+to the standard accuracy, but the dataset is almost perfectly balanced, so
+this is normal. The informedness is about 90%. In other words, if you were
+to bet on the model making a correct prediction, you would win 90% of the time!
 
 ---
 
@@ -413,12 +412,13 @@ CHN =  (ACC - RCC) / (1.0 - RCC)
 
 .column[
 
-The *random* accuracy is approximatively equal to the measured
-accuracy! Cohen's statistic is, therefore, very close to 0, which indicates
-a model with no predictive value whatsoever.
+The *random* accuracy is much lower than to the measured accuracy! Cohen's
+statistic is, therefore, very close to 1, which indicates a model with a
+really high predictive value.
 
-Taken together, these measures show that the model is **not usable to tell
-whether a sample is a Chinstrap penguin**.
+Taken together, these measures show that the model is **usable to tell
+whether a sample is a Chinstrap penguin**, and that the risks associated to
+under or over-prediction can be discussed.
 
 ]
 
@@ -428,22 +428,15 @@ whether a sample is a Chinstrap penguin**.
 
 ## About the model
 
-- it cannot be used for predictions!
-- it has a systematic bias towards over-predicting Chinstrap as a class
-- the predictions are barely better than they would at random
+- it can be used for prediction!
+- it tends to miss a little bit more Chinstrap than it misses
+- the predictions are informative and a lot better than random
 
 --
 
 ## About validation
 
 - need to look at a variety of measures
-- in some cases, biases can be acceptable
+- in some cases, biases can be acceptable, and you can decide on the acceptable level of bias
 - the initial values of these measures provide a good baseline to see if we improve a model
 
----
-
-# Open discussion: why is this model so bad?
-
-Think about the assumptions of Naive Bayesian Classifiers - are some of
-these assumptions likely to decrease the performance of this model, based
-on characteristics of the dataset?

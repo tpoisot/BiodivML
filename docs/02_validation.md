@@ -172,7 +172,7 @@ randompenguin = penguins[
  Row │ species  culmen_length  culmen_depth  flipper_length  bodymass
      │ String   Float64        Float64       Int64           Int64
 ─────┼────────────────────────────────────────────────────────────────
-   1 │ Gentoo            52.2          17.1             228      5400
+   1 │ Adelie            39.6          18.1             186      4450
 ```
 
 
@@ -202,10 +202,10 @@ p
 
 ```
 4×3 Matrix{Float64}:
- 4.95892e-7  0.0718783   0.0417242
- 0.193901    0.178649    0.041799
- 2.84698e-9  2.12674e-6  0.0158058
- 9.49334e-7  8.54096e-8  0.000659074
+ 0.143601     0.0026112    0.00488139
+ 0.320521     0.337638     0.00285738
+ 0.0501888    0.0216632    7.21583e-7
+ 0.000233474  0.000182241  0.000351024
 ```
 
 
@@ -217,36 +217,40 @@ p
 # Assigning a sample to a class (part 3)
 
 We can get our matrix of probability, and multiply its *columns* to get the
-overall score, then feed this to `argmax`:
+overall score:
 
 ```julia
-class_k = vec(prod(p; dims=2)) |> argmax
+vec(prod(p; dims=1))
 ```
 
 ```
-2
+3-element Vector{Float64}:
+ 5.393385132541402e-7
+ 3.4806337170004415e-9
+ 3.532922411967302e-15
 ```
 
 
 
 
 
-We can finally check which class this was actually:
+We then feed this to `argmax`, and have a look at the class we get in return:
 
 ```julia
+class_k = vec(prod(p; dims=1)) |> argmax
 morphodist.species[class_k]
 ```
 
 ```
-"Chinstrap"
+"Adelie"
 ```
 
 
 
 
 
-Interestingly, the correct class was "Gentoo", but this is
-not the answer we get. So, how do we evalue the model performance?
+This seems to work for this sample - how do we evaluate the overall success
+of the model?
 
 ---
 
@@ -263,7 +267,7 @@ for i in 1:size(penguins, 1)
             p[k,j] = pdf(morphodist[j,ft], penguins[i,ft])
         end
     end
-    class_k = argmax(vec(prod(p; dims=2)))
+    class_k = argmax(vec(prod(p; dims=1)))
     push!(predictions, morphodist.species[class_k])
 end
 ```
@@ -273,21 +277,6 @@ end
 
 Note that this leads to some data re-use, but we used the summary statistics
 and not the raw data, so it's cool.
-
-```julia
-countmap(predictions)
-```
-
-```
-Dict{String, Int64} with 3 entries:
-  "Adelie"    => 89
-  "Gentoo"    => 17
-  "Chinstrap" => 228
-```
-
-
-
-
 
 ---
 
@@ -327,8 +316,8 @@ conf = [TP FN; FP TN]
 
 ```
 2×2 Matrix{Int64}:
-  49  19
- 179  87
+ 63    5
+  6  260
 ```
 
 
@@ -357,15 +346,15 @@ sum(diag(conf))/sum(conf)
 ```
 
 ```
-0.40718562874251496
+0.9670658682634731
 ```
 
 
 
 
 
-It's **pretty bad**! This is a good opportunity to figure out why and how
-our model is misbehaving. 
+It's **pretty good**! But let's not take any risk, and try to understand in
+depth how good the model really is.
 
 ---
 
@@ -384,7 +373,7 @@ TPR = TP/(TP+FN)
 ```
 
 ```
-0.7205882352941176
+0.9264705882352942
 ```
 
 
@@ -398,7 +387,7 @@ TNR = TN/(TN+FP)
 ```
 
 ```
-0.32706766917293234
+0.9774436090225563
 ```
 
 
@@ -414,7 +403,7 @@ FPR = FP/(FP+TN)
 ```
 
 ```
-0.6729323308270677
+0.022556390977443608
 ```
 
 
@@ -428,7 +417,7 @@ FNR = FN/(FN+TP)
 ```
 
 ```
-0.27941176470588236
+0.07352941176470588
 ```
 
 
@@ -436,11 +425,11 @@ FNR = FN/(FN+TP)
 
 ]
 
-This classifier correctly identifies a Chinstrap as a Chinstrap 72% of the
-time, but identifies something else as a Chinstrap 67% of the time!
+This classifier correctly identifies a Chinstrap as a Chinstrap 92% of the
+time, and identifies something else as a Chinstrap only 2% of the time!
 
-In other words, it's predicting *a lot more* Chinstrap penguins than we
-should expect.
+In other words, it's **really good** at telling if something is a Chinstrap
+penguin or not.
 
 ---
 
@@ -458,7 +447,7 @@ PPV = TP/(TP+FP)
 ```
 
 ```
-0.2149122807017544
+0.9130434782608695
 ```
 
 
@@ -472,7 +461,7 @@ NPV = TN/(TN+FN)
 ```
 
 ```
-0.8207547169811321
+0.9811320754716981
 ```
 
 
@@ -488,7 +477,7 @@ FDR = FP/(FP+TP)
 ```
 
 ```
-0.7850877192982456
+0.08695652173913043
 ```
 
 
@@ -502,7 +491,7 @@ FOR = FN/(FN+TN)
 ```
 
 ```
-0.1792452830188679
+0.018867924528301886
 ```
 
 
@@ -510,9 +499,10 @@ FOR = FN/(FN+TN)
 
 ]
 
-A prediction of "not a Chinstrap" is true about 82% of the time (it's
-great!). A prediction of "Chinstrap" is only true 21% of the time (it's
-not ideal!).
+A prediction of "not a Chinstrap" is true about 98% of the time (it's
+great!). A prediction of "Chinstrap" is only true 91% of the time (it's still
+pretty good!). The risks of *missing* and *falsely detecting* a Chinstrap
+are respectively 1% and 8%.
 
 ---
 
@@ -530,7 +520,7 @@ ACC = (TP+TN)/(TP+TN+FP+FN)
 ```
 
 ```
-0.40718562874251496
+0.9670658682634731
 ```
 
 
@@ -544,7 +534,7 @@ BCC = (TPR + TNR) / 2.0
 ```
 
 ```
-0.523827952233525
+0.9519570986289252
 ```
 
 
@@ -560,7 +550,7 @@ INF = TPR + TNR - 1
 ```
 
 ```
-0.047655904467049925
+0.9039141972578504
 ```
 
 
@@ -569,9 +559,10 @@ INF = TPR + TNR - 1
 
 ]
 
-The balanced accuracy (accounting for class prevalence) is **higher** than
-the standard accuracy, suggesting a very bad model. The informedness is
-essentially 0, meaning that the model is not giving useful information.
+The balanced accuracy (accounting for class prevalence) is **similar**
+to the standard accuracy, but the dataset is almost perfectly balanced, so
+this is normal. The informedness is about 90%. In other words, if you were
+to bet on the model making a correct prediction, you would win 90% of the time!
 
 ---
 
@@ -589,7 +580,7 @@ RCC = ((TN + FP) * (TN + FN) +
 ```
 
 ```
-0.3917315070457887
+0.6739395460575854
 ```
 
 
@@ -603,7 +594,7 @@ CHN =  (ACC - RCC) / (1.0 - RCC)
 ```
 
 ```
-0.025406743692525297
+0.8989937867707704
 ```
 
 
@@ -613,12 +604,13 @@ CHN =  (ACC - RCC) / (1.0 - RCC)
 
 .column[
 
-The *random* accuracy is approximatively equal to the measured
-accuracy! Cohen's statistic is, therefore, very close to 0, which indicates
-a model with no predictive value whatsoever.
+The *random* accuracy is much lower than to the measured accuracy! Cohen's
+statistic is, therefore, very close to 1, which indicates a model with a
+really high predictive value.
 
-Taken together, these measures show that the model is **not usable to tell
-whether a sample is a Chinstrap penguin**.
+Taken together, these measures show that the model is **usable to tell
+whether a sample is a Chinstrap penguin**, and that the risks associated to
+under or over-prediction can be discussed.
 
 ]
 
@@ -628,22 +620,15 @@ whether a sample is a Chinstrap penguin**.
 
 ## About the model
 
-- it cannot be used for predictions!
-- it has a systematic bias towards over-predicting Chinstrap as a class
-- the predictions are barely better than they would at random
+- it can be used for prediction!
+- it tends to miss a little bit more Chinstrap than it misses
+- the predictions are informative and a lot better than random
 
 --
 
 ## About validation
 
 - need to look at a variety of measures
-- in some cases, biases can be acceptable
+- in some cases, biases can be acceptable, and you can decide on the acceptable level of bias
 - the initial values of these measures provide a good baseline to see if we improve a model
 
----
-
-# Open discussion: why is this model so bad?
-
-Think about the assumptions of Naive Bayesian Classifiers - are some of
-these assumptions likely to decrease the performance of this model, based
-on characteristics of the dataset?

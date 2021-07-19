@@ -91,7 +91,7 @@ labels = penguins.species
 We will split our dataset into a training and testing set.
 
 ```julia
-test_index = sample(1:length(labels), 50, replace=false)
+test_index = sample(1:length(labels), 100, replace=false)
 train_index = filter(i -> !(i in test_index), 1:length(labels))
 ```
 
@@ -108,7 +108,7 @@ trainset = (features[:,train_index]', vec(labels[train_index]))
 ```
 
 ```
-([18.7 39.1 181.0 3750.0; 18.0 40.3 195.0 3250.0; … ; 14.8 45.2 212.0 5200.
+([18.7 39.1 181.0 3750.0; 17.4 39.5 186.0 3800.0; … ; 14.8 45.2 212.0 5200.
 0; 16.1 49.9 213.0 5400.0], ["Adelie", "Adelie", "Adelie", "Adelie", "Adeli
 e", "Adelie", "Adelie", "Adelie", "Adelie", "Adelie"  …  "Gentoo", "Gentoo"
 , "Gentoo", "Gentoo", "Gentoo", "Gentoo", "Gentoo", "Gentoo", "Gentoo", "Ge
@@ -137,18 +137,18 @@ print_tree(model, 3)
 
 ```
 Feature 3, Threshold 206.5
-L-> Feature 2, Threshold 44.650000000000006
-    L-> Feature 2, Threshold 42.4
-        L-> Adelie : 112/113
+L-> Feature 2, Threshold 43.35
+    L-> Feature 2, Threshold 42.349999999999994
+        L-> Adelie : 88/88
         R-> 
-    R-> Feature 4, Threshold 4125.0
-        L-> Chinstrap : 43/43
+    R-> Feature 4, Threshold 4175.0
+        L-> Chinstrap : 42/42
         R-> 
-R-> Feature 1, Threshold 18.1
-    L-> Gentoo : 103/103
+R-> Feature 1, Threshold 17.65
+    L-> Gentoo : 83/83
     R-> Feature 1, Threshold 18.95
-        L-> Adelie : 1/1
-        R-> Chinstrap : 5/5
+        L-> Adelie : 2/2
+        R-> Chinstrap : 4/4
 ```
 
 
@@ -159,18 +159,18 @@ R-> Feature 1, Threshold 18.1
 .column[
 ```julia
 prediction = apply_tree(model, first(testset))
-confusion_matrix(last(testset), prediction)
+cm_bas = confusion_matrix(last(testset), prediction)
 ```
 
 ```
 3×3 Matrix{Int64}:
- 23  1   1
-  0  9   0
-  0  0  16
+ 48   1   0
+  1  14   0
+  0   0  36
 Classes:  ["Adelie", "Chinstrap", "Gentoo"]
 Matrix:   
-Accuracy: 0.96
-Kappa:    0.9360204734484964
+Accuracy: 0.98
+Kappa:    0.9670944389601842
 ```
 
 
@@ -209,18 +209,18 @@ st = vec(std(features, dims=2))'
 model = build_tree(last(trainset), (first(trainset).-mn)./st)
 model = prune_tree(model, 0.9)
 prediction = apply_tree(model, (first(testset).-mn)./st)
-confusion_matrix(last(testset), prediction)
+cm_cen = confusion_matrix(last(testset), prediction)
 ```
 
 ```
 3×3 Matrix{Int64}:
- 24  0   1
-  1  8   0
-  0  0  16
+ 47   2   0
+  1  14   0
+  0   0  36
 Classes:  ["Adelie", "Chinstrap", "Gentoo"]
 Matrix:   
-Accuracy: 0.96
-Kappa:    0.9346832135858916
+Accuracy: 0.97
+Kappa:    0.9509162303664921
 ```
 
 
@@ -237,335 +237,172 @@ Kappa:    0.9346832135858916
 
 ---
 
-class: split-30
+# Covariance (it's a problem)
 
-# But how does k-NN *works*?
-
-.column[
-- Get measurements for an object with **unknwon membership**
-- Find out which $k$ known instances have the **closest features**
-- Take a **majority consensus** of the class of the neighbors
-]
-
---
-
-.column[
-If we have measured the following penguin:
+Data have a *covariance*:
 
 ```julia
-pingoo = [12.4, 46.7, 215.3, 4842.0]
+cov(features')
+```
+
+```
+4×4 Matrix{Float64}:
+    3.87267    -2.45692   -15.9697  -749.138
+   -2.45692    29.8173     49.9322  2588.84
+  -15.9697     49.9322    196.621   9854.67
+ -749.138    2588.84     9854.67       6.47761e5
 ```
 
 
 
 
-what is its species, knowing all the data we already have?
 
-This will require a **data transformation** to express the measurements (in
-biological units) in the unitless **features space**:
+In short, knowing something about a variable *might* tell us something about another variable.
+
+---
+
+# Whitening - fixing covariance
+
+Whitening transforms creates a set of *new variables*, whose covariance matrix is the *identity matrix*.
+
+These new variables are uncorrelated, and all have unit variance.
 
 ```julia
-nd = (pingoo .- μ)./σ
+W = fit(Whitening, first(trainset)')
+W.W
+```
+
+```
+4×4 Matrix{Float64}:
+ 0.492984  0.090939   0.360905  -0.0513474
+ 0.0       0.189065  -0.157569  -0.00470196
+ 0.0       0.0        0.11283   -0.12893
+ 0.0       0.0        0.0        0.0025738
 ```
 
 
 
 
-$$
-v_\text{pingoo} = [Error: UndefVarError: nd not defined, Error: UndefVarError: nd not defined, Error: UndefVarError: nd not defined, Error: UndefVarError: nd not defined]^T
-$$
 
-]
+---
+
+# Whitening
+
+```julia
+model = build_tree(last(trainset), MultivariateStats.transform(W, first(trainset)')')
+model = prune_tree(model, 0.9)
+prediction = apply_tree(model, MultivariateStats.transform(W, first(testset)')')
+cm_whi = confusion_matrix(last(testset), prediction)
+```
+
+```
+3×3 Matrix{Int64}:
+ 47   1   1
+  1  14   0
+  1   0  35
+Classes:  ["Adelie", "Chinstrap", "Gentoo"]
+Matrix:   
+Accuracy: 0.96
+Kappa:    0.9341888779203685
+```
+
+
+
+
+
+---
+
+# Whitening - transformations are model
+
+Note that we can transform *any* vector with 4 elements corresponding to the features into a set of random variables.
+
+The transformation *is* a model!
+
+This will be important for PCA.
+
+---
+
+# Whitening - discussion
+
+- There is a small dip in performance
+- Why?
+
+---
+
+# PCA - reprojecting the variables
+
+```julia
+ctrain = ((first(trainset).-mn)./st)'
+ctest = ((first(testset).-mn)./st)'
+P = fit(PCA, ctrain)
+```
+
+```
+PCA(indim = 4, outdim = 4, principalratio = 1.0)
+```
+
+
+
+```julia
+projection(P)
+```
+
+```
+4×4 Matrix{Float64}:
+  0.420032  0.789643    0.419332   0.155556
+ -0.433409  0.605103   -0.652432  -0.142616
+ -0.584209  0.0282118   0.24525    0.773147
+ -0.542614  0.0975581   0.581675  -0.598085
+```
+
+
+
+
+
+| Feature            | Value                 |
+|--------------------|-----------------------|
+| Input dim.         | 4          |
+| Output dim.        | 4         |
+| Variance preserved | 1.0 |
 
 ---
 
 class: split-50
 
-# Measuring the distances
+# PCA - dimensionality reduction
 
-.column[
-We can very easily use the Euclidean distance:
-
-```julia
-distances = vec(sqrt.(sum((nf .- nd).^2.0; dims=1)))
-```
-
-
-
-
-Let's also plot it to look at the distribution:
-
-```julia
-plot(
-    y = sort(distances),
-    Geom.line,
-    Guide.xlabel("Rank of neighbor"),
-    Guide.ylabel("Distance")
-) |> PNG("figures/knndist.png", dpi=600)
-```
-
-```
-Error: UndefVarError: distances not defined
-```
-
-
-
-
-
-Note that $k$-NN does not require to set a *distance* cutoff (so we don't care
-too much about the distance distribution)!
-]
-
-.column[
-![](figures/knndist.png)
-]
-
----
-
-# Getting the class membership of neighbors
-
-We can use `sortperm` to return a *sorted ordering* of the distance vector, and
-then use `findall` to get the position of the distances that are the $k$
-smallest:
-
-```julia
-k = 5
-neighbors = findall(sortperm(distances) .<= k)
-neighbors'
-```
-
-```
-Error: UndefVarError: distances not defined
-```
-
-
-
-
-
-Because we know where the **labels** are stored (`penguins.species`), we can get
-the pool of possible species for our object:
-
-```julia
-penguins.species[neighbors]
-```
-
-```
-Error: UndefVarError: neighbors not defined
-```
-
-
-
-
-
----
-
-# Assigning our penguin to a class
-
-Voting is, at this point, as simple as counting the number of times any species
-was recommended:
-
-```julia
-votes = countmap(penguins.species[neighbors])
-```
-
-```
-Error: UndefVarError: neighbors not defined
-```
-
-
-
-
-
-We can use some basic `sort`ing of the votes to get the most likely species for
-the sample:
-
-```julia
-first(sort(collect(votes), by = (x) -> x.second, rev=true)).first
-```
-
-```
-Error: UndefVarError: votes not defined
-```
-
-
-
-
-
----
-
-# The "landscape" of k-NN predictions
-
-We will assume that we know of *two* values, and ignore two others:
-
-
-```julia
-ftval = LinRange(-3, 3, 90)
-ftcomb = vec(collect(Base.product(ftval, ftval)))
-decisions = []
-for (f1, f2) in ftcomb
-    tv = [f1, f2, 0.0, 0.0]
-    distances = vec(sqrt.(sum((nf .- tv).^2.0; dims=1)))
-    neighbors = findall(sortperm(distances) .<= 5)
-    votes = countmap(penguins.species[neighbors])
-    decision = first(sort(collect(votes), by = (x) -> x.second, rev=true)).first
-    push!(decisions, decision)
-end
-```
-
-```
-Error: UndefVarError: nf not defined
-```
-
-
-
-
-
----
-
-class: split-50
-
-# Visualizing the predictions (k=5)
-
-.column[
-```julia
-f1 = [first(c) for c in ftcomb]
-f2 = [last(c) for c in ftcomb]
-plot(
-    x = f1, y = f2,
-    color=decisions,
-    Geom.rectbin,
-    Guide.xlabel("Culmen depth (relative)"),
-    Guide.ylabel("Culmen length (relative)"),
-    Coord.cartesian(
-        xmin=-3, xmax=3, ymin=-3, ymax=3, fixed=true
-    )
-) |> PNG("figures/knnsim.png", dpi=600)
-```
-
-```
-Error: MethodError: no method matching iterate(::Nothing)
-Closest candidates are:
-  iterate(!Matched::Union{LinRange, StepRangeLen}) at range.jl:664
-  iterate(!Matched::Union{LinRange, StepRangeLen}, !Matched::Int64) at rang
-e.jl:664
-  iterate(!Matched::T) where T<:Union{Base.KeySet{var"#s79", var"#s78"} whe
-re {var"#s79", var"#s78"<:Dict}, Base.ValueIterator{var"#s77"} where var"#s
-77"<:Dict} at dict.jl:693
-  ...
-```
-
-
-
-
-
-]
-
-.column[
-![](figures/knnsim.png)
-]
-
----
-
-# Intermezzo: turning k-NN into a function
-
-```julia
-function knn(v::Vector{TF}, features::Matrix{TF}, labels::Vector{TL}; k::Integer=5) where {TF <: Number, TL}
-    @assert length(v) == size(features, 1)
-    @assert length(labels) == size(features, 2)
-    @assert 1 <= k <= length(labels)
-
-    Δ = vec(sqrt.(sum((v .- features).^2.0; dims=1)))
-
-    neighbors = findall(sortperm(Δ) .<= k)
-    votes = countmap(labels[neighbors])
-    decision = first(sort(collect(votes), by = (x) -> x.second, rev=true)).first
-
-    return decision
-end
-```
-
-
-```julia
-labels = vec(String.(penguins.species))
-features = nf
-```
-
-
-
-
----
-
-# Cross validation
-
-We want to **evaluate** the model on data it **has not seen before**. We call
-this **cross-validation**.
+Whitening kept the *same* number of variables.
 
 --
 
-**Holdout**: the dataset is split in two (training and testing), and we measure
-the performance by applying to the model on the testing set, but only informing
-it of the training set.
+PCA can *reduce* the number of variables, by keeping *just enough* to explain
+a set proportion of variance. Here, starting from 4 features,
+we can explain 99% of variance with 4 axis.
 
 --
 
-**K-fold**: we divide the dataset in $K$ samples, train it on
-$K-1$, and evaluate on the remaining one.
-
---
-
-**Leave-One-Out**: we apply K-fold validation, where $K = n-1$, so that *every
-single object* in the dataset is evaluated as a testing set.
+What do you think would happen with the "raw" features?
 
 ---
 
-# Measuring accuracy
-
-One important decision to make when evaluating a model is to decide *which
-function is used to measure its performance*.
-
-We will see a lot more when working on binary classifiers.
-
-For the moment, let's have a look at the accurracy function: the proportion of
-correct guesses.
-
---
+# PCA
 
 ```julia
-function accuracy(x::Vector{T}, y::Vector{T}) where {T}
-    @assert length(x) == length(y)
-    return sum(x .== y)/length(x)
-end
-```
-
-
-
-
----
-
-# Leave-One-Out cross validation
-
-```julia
-guesses = similar(labels)
-
-function loocv!(guesses, features, labels; k=3)
-    for i in 1:size(features, 2)
-        tf = features[:, setdiff(1:end, i)]
-        tl = labels[setdiff(1:end, i)]
-        guesses[i] = knn(vec(features[:,i]), tf, tl; k=k)
-    end
-    return accuracy(guesses, labels)
-end
-
-function loocv(features, labels; k=3)
-    guesses = similar(labels)
-    return loocv!(guesses, features, labels; k=k)
-end
-
-loocv!(guesses, features, labels)
+model = build_tree(last(trainset), MultivariateStats.transform(P, ctrain)')
+model = prune_tree(model, 0.9)
+prediction = apply_tree(model, MultivariateStats.transform(P, ctest)')
+cm_pca = confusion_matrix(last(testset), prediction)
 ```
 
 ```
-0.6497005988023952
+3×3 Matrix{Int64}:
+ 47   2   0
+  0  15   0
+  0   0  36
+Classes:  ["Adelie", "Chinstrap", "Gentoo"]
+Matrix:   
+Accuracy: 0.98
+Kappa:    0.9674585095997397
 ```
 
 
@@ -574,34 +411,28 @@ loocv!(guesses, features, labels)
 
 ---
 
-class: split-50
+# PCA - discussion
 
-# Can we find the "best" k?
+- The performance increased *a little*
+- Why?
 
-.column[
-```julia
-K = collect(1:20)
+---
 
-acc = [
-    loocv!(
-        guesses, features, labels; k=k
-    ) for k in K
-]
+# Summary
 
-plot(
-    x = K, y = acc,
-    Geom.point,
-    Geom.line,
-    Guide.xlabel("Number of neighbors"),
-    Guide.ylabel("Accuracy"),
-) |> PNG("figures/knnloo.png", dpi=600)
-```
+| Model                | Accuracy            | Cohen's Kappa    |
+|----------------------|---------------------|------------------|
+| baseline             | 0.98 | 0.9670944389601842 |
+| center + standardize | 0.97 | 0.9509162303664921 |
+| Whitening            | 0.96 | 0.9341888779203685 |
+| PCA                  | 0.98 | 0.9674585095997397 |
 
+--
 
+## What's going on?
 
+--
 
-]
-
-.column[
-![](figures/knnloo.png)
-]
+- decision trees are prone to **overfitting** (we'll get back to this with neural networks)
+- the classes are essentially **linearly separable** - we can draw lines to split the dataset
+- sometimes you don't **need** the fancy features transformation!

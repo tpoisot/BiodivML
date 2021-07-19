@@ -78,7 +78,7 @@ labels = penguins.species
 We will split our dataset into a training and testing set.
 
 ~~~julia; results="hidden"
-test_index = sample(1:length(labels), 50, replace=false)
+test_index = sample(1:length(labels), 100, replace=false)
 train_index = filter(i -> !(i in test_index), 1:length(labels))
 ~~~
 
@@ -111,7 +111,7 @@ print_tree(model, 3)
 .column[
 ~~~julia
 prediction = apply_tree(model, first(testset))
-confusion_matrix(last(testset), prediction)
+cm_bas = confusion_matrix(last(testset), prediction)
 ~~~
 ]
 
@@ -137,7 +137,7 @@ st = vec(std(features, dims=2))'
 model = build_tree(last(trainset), (first(trainset).-mn)./st)
 model = prune_tree(model, 0.9)
 prediction = apply_tree(model, (first(testset).-mn)./st)
-confusion_matrix(last(testset), prediction)
+cm_cen = confusion_matrix(last(testset), prediction)
 ~~~
 ]
 
@@ -149,3 +149,131 @@ confusion_matrix(last(testset), prediction)
 - Why?
 
 ---
+
+# Covariance (it's a problem)
+
+Data have a *covariance*:
+
+~~~julia
+cov(features')
+~~~
+
+In short, knowing something about a variable *might* tell us something about another variable.
+
+---
+
+# Whitening - fixing covariance
+
+Whitening transforms creates a set of *new variables*, whose covariance matrix is the *identity matrix*.
+
+These new variables are uncorrelated, and all have unit variance.
+
+~~~julia
+W = fit(Whitening, first(trainset)')
+W.W
+~~~
+
+---
+
+# Whitening
+
+~~~julia
+model = build_tree(last(trainset), MultivariateStats.transform(W, first(trainset)')')
+model = prune_tree(model, 0.9)
+prediction = apply_tree(model, MultivariateStats.transform(W, first(testset)')')
+cm_whi = confusion_matrix(last(testset), prediction)
+~~~
+
+---
+
+# Whitening - transformations are model
+
+Note that we can transform *any* vector with 4 elements corresponding to the features into a set of random variables.
+
+The transformation *is* a model!
+
+This will be important for PCA.
+
+---
+
+# Whitening - discussion
+
+- There is a small dip in performance
+- Why?
+
+---
+
+# PCA - reprojecting the variables
+
+~~~julia
+ctrain = ((first(trainset).-mn)./st)'
+ctest = ((first(testset).-mn)./st)'
+P = fit(PCA, ctrain)
+~~~
+
+~~~julia
+projection(P)
+~~~
+
+| Feature            | Value                 |
+|--------------------|-----------------------|
+| Input dim.         | `j indim(P)`          |
+| Output dim.        | `j outdim(P)`         |
+| Variance preserved | `j principalratio(P)` |
+
+---
+
+class: split-50
+
+# PCA - dimensionality reduction
+
+Whitening kept the *same* number of variables.
+
+--
+
+PCA can *reduce* the number of variables, by keeping *just enough* to explain
+a set proportion of variance. Here, starting from `j indim(P)` features,
+we can explain 99% of variance with `j outdim(P)` axis.
+
+--
+
+What do you think would happen with the "raw" features?
+
+---
+
+# PCA
+
+~~~julia
+model = build_tree(last(trainset), MultivariateStats.transform(P, ctrain)')
+model = prune_tree(model, 0.9)
+prediction = apply_tree(model, MultivariateStats.transform(P, ctest)')
+cm_pca = confusion_matrix(last(testset), prediction)
+~~~
+
+---
+
+# PCA - discussion
+
+- The performance increased *a little*
+- Why?
+
+---
+
+# Summary
+
+| Model                | Accuracy            | Cohen's Kappa    |
+|----------------------|---------------------|------------------|
+| baseline             | `j cm_bas.accuracy` | `j cm_bas.kappa` |
+| center + standardize | `j cm_cen.accuracy` | `j cm_cen.kappa` |
+| Whitening            | `j cm_whi.accuracy` | `j cm_whi.kappa` |
+| PCA                  | `j cm_pca.accuracy` | `j cm_pca.kappa` |
+
+--
+
+## What's going on?
+
+--
+
+- decision trees are prone to **overfitting** (we'll get back to this with neural networks)
+- the classes are essentially **linearly separable** - we can draw lines to split the dataset
+- sometimes you don't **need** the fancy features transformation!

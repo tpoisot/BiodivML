@@ -38,14 +38,14 @@ from within the Julia REPL.
 |   1   | [Data wrangling][wrangling]       | [data.jl][wranglingjl]        |
 |   2   | [k-NN from scratch][knn]          | [knn.jl][knnjl]               |
 |   3   | [Validation measures][validation] | [validation.jl][validationjl] |
-|   4   | Trees and forests                 |                               |
-|   5   | Feature engineering               |                               |
-|   6   | Artificial Neural Networks        |                               |
+|   4   | [Feature engineering][features]   | [features.jl][featuresjl]                               |
 
 [wrangling]: data.html
 [knn]: knn.html
 [validation]: validation.html
+[features]: features.html
 
 [wranglingjl]: https://github.com/tpoisot/BiodivML/blob/main/scripts/00_data.jl
 [knnjl]: https://github.com/tpoisot/BiodivML/blob/main/scripts/01_knn.jl
 [validationjl]: https://github.com/tpoisot/BiodivML/blob/main/scripts/02_validation.jl
+[featuresjl]: https://github.com/tpoisot/BiodivML/blob/main/scripts/03_features.jl

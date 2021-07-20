@@ -16,7 +16,7 @@ permalink: features
 
 - Apply some transformation on the penguins dataset
 - Discuss the difference between PCA in ecology and machine learning
-- See the effect of feature transformation on model performance
+- See the effect (or not!) of feature transformation on model performance
 
 --
 
@@ -28,6 +28,17 @@ permalink: features
 
 ---
 
+# Before we start...
+
+- Transformations are **models** that illuminate the relationship between predictors and response
+    - they operate on features
+    - their outputs are features
+- There are **several books** focused only on feature engineering
+- Most of the feature engineering techniques are **domain specific**
+- We will focus on **frequent** and **powerful** techniques for quantitative predictors
+
+---
+
 # Setting up the environment
 
 We will not need a lot more than for the previous module:
@@ -35,8 +46,6 @@ We will not need a lot more than for the previous module:
 ```julia
 using DataFrames, DataFramesMeta
 import CSV
-import Cairo, Fontconfig
-using Gadfly
 ```
 
 We will add the `MultivariateStats` and `DecisionTree` packages to help.
@@ -47,6 +56,9 @@ using StatsBase
 using MultivariateStats
 using DecisionTree
 ```
+
+The `DecisionTree` package assumes that features are rows, so we'll do a
+lot of transpose (`'`).
 
 ---
 
@@ -114,6 +126,15 @@ prediction = apply_tree(model, first(testset))
 cm_bas = confusion_matrix(last(testset), prediction)
 ~~~
 ]
+
+---
+
+# Intermezzo - decision trees
+
+- Work by splitting the dataset in two
+- Splits are done on features, at some point maximizing a criteria
+- There are many tree-based approaches for classification or regressions
+- Random forests are usually a good initial guess (few parameters, work a little too well)
 
 ---
 
@@ -227,7 +248,8 @@ class: split-50
 
 # PCA - dimensionality reduction
 
-Whitening kept the *same* number of variables.
+Whitening keeps the *same* number of variables - it creates derived variables,
+but keeps the same dimensionality.
 
 --
 
@@ -237,7 +259,8 @@ we can explain 99% of variance with `j outdim(P)` axis.
 
 --
 
-What do you think would happen with the "raw" features?
+What do you think would happen with the "raw" features? Do you think the
+fact that we keep all variables hints at some important truth about our data?
 
 ---
 

@@ -1,9 +1,6 @@
 
 using DataFrames, DataFramesMeta
 using CSV: CSV
-using Cairo: Cairo
-using Fontconfig: Fontconfig
-using Gadfly
 
 using Statistics
 using StatsBase

@@ -17,7 +17,7 @@ permalink: "features"
 
 - Apply some transformation on the penguins dataset
 - Discuss the difference between PCA in ecology and machine learning
-- See the effect of feature transformation on model performance
+- See the effect (or not!) of feature transformation on model performance
 
 --
 
@@ -29,6 +29,17 @@ permalink: "features"
 
 ---
 
+# Before we start...
+
+- Transformations are **models** that illuminate the relationship between predictors and response
+    - they operate on features
+    - their outputs are features
+- There are **several books** focused only on feature engineering
+- Most of the feature engineering techniques are **domain specific**
+- We will focus on **frequent** and **powerful** techniques for quantitative predictors
+
+---
+
 # Setting up the environment
 
 We will not need a lot more than for the previous module:
@@ -36,8 +47,6 @@ We will not need a lot more than for the previous module:
 ```julia
 using DataFrames, DataFramesMeta
 import CSV
-import Cairo, Fontconfig
-using Gadfly
 ```
 
 
@@ -54,6 +63,9 @@ using DecisionTree
 
 
 
+
+The `DecisionTree` package assumes that features are rows, so we'll do a
+lot of transpose (`'`).
 
 ---
 
@@ -108,7 +120,7 @@ trainset = (features[:,train_index]', vec(labels[train_index]))
 ```
 
 ```
-([18.7 39.1 181.0 3750.0; 17.4 39.5 186.0 3800.0; … ; 14.8 45.2 212.0 5200.
+([18.0 40.3 195.0 3250.0; 19.3 36.7 193.0 3450.0; … ; 14.8 45.2 212.0 5200.
 0; 16.1 49.9 213.0 5400.0], ["Adelie", "Adelie", "Adelie", "Adelie", "Adeli
 e", "Adelie", "Adelie", "Adelie", "Adelie", "Adelie"  …  "Gentoo", "Gentoo"
 , "Gentoo", "Gentoo", "Gentoo", "Gentoo", "Gentoo", "Gentoo", "Gentoo", "Ge
@@ -137,17 +149,17 @@ print_tree(model, 3)
 
 ```
 Feature 3, Threshold 206.5
-L-> Feature 2, Threshold 43.35
-    L-> Feature 2, Threshold 42.349999999999994
-        L-> Adelie : 88/88
+L-> Feature 2, Threshold 43.150000000000006
+    L-> Feature 1, Threshold 16.75
+        L-> 
+        R-> Adelie : 86/86
+    R-> Feature 4, Threshold 4075.0
+        L-> Chinstrap : 37/37
         R-> 
-    R-> Feature 4, Threshold 4175.0
-        L-> Chinstrap : 42/42
-        R-> 
-R-> Feature 1, Threshold 17.65
-    L-> Gentoo : 83/83
-    R-> Feature 1, Threshold 18.95
-        L-> Adelie : 2/2
+R-> Feature 1, Threshold 17.55
+    L-> Gentoo : 84/84
+    R-> Feature 1, Threshold 18.75
+        L-> Adelie : 1/1
         R-> Chinstrap : 4/4
 ```
 
@@ -164,19 +176,28 @@ cm_bas = confusion_matrix(last(testset), prediction)
 
 ```
 3×3 Matrix{Int64}:
- 48   1   0
-  1  14   0
-  0   0  36
+ 44   2   0
+  2  17   0
+  0   0  35
 Classes:  ["Adelie", "Chinstrap", "Gentoo"]
 Matrix:   
-Accuracy: 0.98
-Kappa:    0.9670944389601842
+Accuracy: 0.96
+Kappa:    0.936487773896475
 ```
 
 
 
 
 ]
+
+---
+
+# Intermezzo - decision trees
+
+- Work by splitting the dataset in two
+- Splits are done on features, at some point maximizing a criteria
+- There are many tree-based approaches for classification or regressions
+- Random forests are usually a good initial guess (few parameters, work a little too well)
 
 ---
 
@@ -214,13 +235,13 @@ cm_cen = confusion_matrix(last(testset), prediction)
 
 ```
 3×3 Matrix{Int64}:
- 47   2   0
-  1  14   0
-  0   0  36
+ 45   1   0
+  2  16   1
+  0   0  35
 Classes:  ["Adelie", "Chinstrap", "Gentoo"]
 Matrix:   
-Accuracy: 0.97
-Kappa:    0.9509162303664921
+Accuracy: 0.96
+Kappa:    0.9360511590727417
 ```
 
 
@@ -274,10 +295,10 @@ W.W
 
 ```
 4×4 Matrix{Float64}:
- 0.492984  0.090939   0.360905  -0.0513474
- 0.0       0.189065  -0.157569  -0.00470196
- 0.0       0.0        0.11283   -0.12893
- 0.0       0.0        0.0        0.0025738
+ 0.513882  0.0975826   0.395851  -0.0425886
+ 0.0       0.181682   -0.166326  -0.0144796
+ 0.0       0.0         0.118027  -0.138171
+ 0.0       0.0         0.0        0.00266943
 ```
 
 
@@ -297,13 +318,13 @@ cm_whi = confusion_matrix(last(testset), prediction)
 
 ```
 3×3 Matrix{Int64}:
- 47   1   1
-  1  14   0
-  1   0  35
+ 43   3   0
+  2  17   0
+  1   0  34
 Classes:  ["Adelie", "Chinstrap", "Gentoo"]
 Matrix:   
-Accuracy: 0.96
-Kappa:    0.9341888779203685
+Accuracy: 0.94
+Kappa:    0.9049730757047829
 ```
 
 
@@ -349,10 +370,10 @@ projection(P)
 
 ```
 4×4 Matrix{Float64}:
-  0.420032  0.789643    0.419332   0.155556
- -0.433409  0.605103   -0.652432  -0.142616
- -0.584209  0.0282118   0.24525    0.773147
- -0.542614  0.0975581   0.581675  -0.598085
+  0.37446    0.785161    0.468535  -0.154196
+ -0.464671   0.617438   -0.622423   0.124262
+ -0.572413  -0.0266553   0.244748  -0.782133
+ -0.56232    0.0397711   0.577203   0.590806
 ```
 
 
@@ -371,7 +392,8 @@ class: split-50
 
 # PCA - dimensionality reduction
 
-Whitening kept the *same* number of variables.
+Whitening keeps the *same* number of variables - it creates derived variables,
+but keeps the same dimensionality.
 
 --
 
@@ -381,7 +403,8 @@ we can explain 99% of variance with 4 axis.
 
 --
 
-What do you think would happen with the "raw" features?
+What do you think would happen with the "raw" features? Do you think the
+fact that we keep all variables hints at some important truth about our data?
 
 ---
 
@@ -396,13 +419,13 @@ cm_pca = confusion_matrix(last(testset), prediction)
 
 ```
 3×3 Matrix{Int64}:
- 47   2   0
-  0  15   0
-  0   0  36
+ 45   1   0
+  0  19   0
+  0   1  34
 Classes:  ["Adelie", "Chinstrap", "Gentoo"]
 Matrix:   
 Accuracy: 0.98
-Kappa:    0.9674585095997397
+Kappa:    0.9684592335593755
 ```
 
 
@@ -422,10 +445,10 @@ Kappa:    0.9674585095997397
 
 | Model                | Accuracy            | Cohen's Kappa    |
 |----------------------|---------------------|------------------|
-| baseline             | 0.98 | 0.9670944389601842 |
-| center + standardize | 0.97 | 0.9509162303664921 |
-| Whitening            | 0.96 | 0.9341888779203685 |
-| PCA                  | 0.98 | 0.9674585095997397 |
+| baseline             | 0.96 | 0.936487773896475 |
+| center + standardize | 0.96 | 0.9360511590727417 |
+| Whitening            | 0.94 | 0.9049730757047829 |
+| PCA                  | 0.98 | 0.9684592335593755 |
 
 --
 
